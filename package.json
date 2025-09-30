@@ -1,0 +1,43 @@
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build --base=/assets/wecars/frontend/ && yarn copy-html-entry",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "copy-html-entry": "cp ../wecars/public/frontend/index.html ../wecars/www/frontend.html"
+  },
+  "dependencies": {
+    "@heroicons/react": "^2.2.0",
+    "@heroui/react": "^2.8.4",
+    "axios": "^1.7.9",
+    "framer-motion": "^12.23.22",
+    "frappe-react-sdk": "^1.12.0",
+    "i18next": "^24.2.0",
+    "lucide-react": "^0.544.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-i18next": "^15.4.0",
+    "react-icons": "^5.5.0",
+    "react-router-dom": "^6.28.1",
+    "react-toastify": "^11.0.2",
+    "react-typewriter-effect": "^1.1.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.36.0",
+    "@types/react": "^19.1.13",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^4.7.0",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^9.36.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.4.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.17",
+    "vite": "^5.4.20"
+  }
+}

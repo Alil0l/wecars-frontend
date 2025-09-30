@@ -1,0 +1,137 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;700;800;900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+	font-family: 'Cairo', sans-serif;
+    overflow-x: hidden;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: none;
+    overscroll-behavior-x: none;
+    -webkit-overflow-scrolling: touch;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Dark mode transitions */
+  * {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* RTL Support */
+  [dir="rtl"] {
+    direction: rtl;
+  }
+
+  [dir="ltr"] {
+    direction: ltr;
+  }
+
+  /* RTL-specific styles */
+  .rtl {
+    direction: rtl;
+    text-align: right;
+  }
+
+  .ltr {
+    direction: ltr;
+    text-align: left;
+  }
+
+
+  .rtl .space-x-4 > * + * {
+    margin-left: 0;
+    margin-right: 1rem;
+  }
+
+  .rtl .space-x-2 > * + * {
+    margin-left: 0;
+    margin-right: 0.5rem;
+  }
+
+  .rtl .space-x-8 > * + * {
+    margin-left: 0;
+    margin-right: 2rem;
+  }
+
+  /* RTL text alignment */
+  .rtl .text-left {
+    text-align: right;
+  }
+
+  .rtl .text-right {
+    text-align: left;
+  }
+
+  /* RTL margin adjustments */
+  .rtl .ml-auto {
+    margin-left: 0;
+    margin-right: auto;
+  }
+
+  .rtl .mr-auto {
+    margin-right: 0;
+    margin-left: auto;
+  }
+
+  /* RTL padding adjustments */
+  .rtl .pl-4 {
+    padding-left: 0;
+    padding-right: 1rem;
+  }
+
+  .rtl .pr-4 {
+    padding-right: 0;
+    padding-left: 1rem;
+  }
+
+  /* RTL border adjustments */
+  .rtl .border-l {
+    border-left: none;
+    border-right: 1px solid;
+  }
+
+  .rtl .border-r {
+    border-right: none;
+    border-left: 1px solid;
+  }
+
+  /* RTL dropdown positioning */
+  .rtl .absolute.right-0 {
+    right: auto;
+    left: 0;
+  }
+
+  /* RTL icon rotations */
+  .rtl .transform.rotate-180 {
+    transform: rotate(0deg);
+  }
+
+  /* RTL grid adjustments */
+  .rtl .grid-cols-1.md\\:grid-cols-2 {
+    direction: rtl;
+  }
+
+  /* RTL form elements */
+  .rtl input,
+  .rtl textarea,
+  .rtl select {
+    text-align: right;
+  }
+
+  /* RTL button adjustments */
+  .rtl .flex.items-center.space-x-2 {
+    flex-direction: row-reverse;
+  }
+
+  /* RTL modal and overlay adjustments */
+  .rtl .fixed.inset-0 {
+    direction: rtl;
+  }
