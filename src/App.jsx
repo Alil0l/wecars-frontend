@@ -7,9 +7,7 @@ import { UserProvider } from './contexts/UserContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { LanguageProvider } from './contexts/LanguageContext'
 import 'react-toastify/dist/ReactToastify.css'
-
-
-
+// views
 import Landing from './views/Landing'
 import Login from './views/Login'
 import SignUp from './views/SignUp'
@@ -20,6 +18,62 @@ import SubmissionDetails from './views/SubmissionDetails'
 import Homepage from './views/Homepage'
 import NotFound from './views/NotFound'
 import Layout from './components/Layout'
+
+export default function App() {
+	// const getUserToken = async () => {
+	// 	const response = await fetch('/api/method/wecars.auth.send_auth_link', {
+	// 		method: 'POST',
+	// 		body: JSON.stringify({
+	// 			email: 'Administrator',
+	// 			user_data: {}
+	// 		})
+	// 	})
+	// 	const data = await response.json()
+	// 	console.log(data)
+	// 	return data.message.api_key
+	// }
+	const getUserToken = () => {
+		const apiKey = localStorage.getItem('wecars_api_key');
+		const apiSecret = localStorage.getItem('wecars_api_secret');
+		if (apiKey && apiSecret) {
+			return `${apiKey}:${apiSecret}`;
+		}
+		return '';
+	}
+  return (
+	<div id="App">
+	  <FrappeProvider
+	  swrConfig={{
+		refreshInterval: 20000,
+		revalidateOnFocus: false,
+		revalidateOnReconnect: false,
+		revalidateOnMount: true,
+		revalidateIfStale: false,
+		revalidateOnBlur: false,
+		revalidateOnError: false,
+		revalidateOnInterval: false,
+	  }}
+	  tokenParams={{
+		type: "token",
+		useToken: true,
+		token: getUserToken,
+	  }}
+	  >
+		<HeroUIProvider>
+			<ThemeProvider>
+				<LanguageProvider>
+					<AppProvider>
+						<UserProvider>
+							<RouterProvider router={router} />
+						</UserProvider>
+					</AppProvider>
+				</LanguageProvider>
+			</ThemeProvider>
+		</HeroUIProvider>
+	  </FrappeProvider>
+	</div>
+  )
+}
 
 const routes = [
 	{
@@ -65,25 +119,3 @@ const routes = [
 }
 ]
 const router = createBrowserRouter(routes)
-
-export default function App() {
-
-  return (
-	<div id="App">
-	  <FrappeProvider>
-		<HeroUIProvider>
-			<ThemeProvider>
-				<LanguageProvider>
-					<AppProvider>
-						<UserProvider>
-							<RouterProvider router={router} />
-						</UserProvider>
-					</AppProvider>
-				</LanguageProvider>
-			</ThemeProvider>
-		</HeroUIProvider>
-	  </FrappeProvider>
-	</div>
-  )
-}
-

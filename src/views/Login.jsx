@@ -3,15 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useUserContext } from '../contexts/UserContext';
 import { useAppContext } from '../contexts/AppContext';
- 
+ import {useFrappePostCall} from 'frappe-react-sdk';
 import Icon from '../components/Icons';
 
 export default function Login() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { setUser } = useUserContext();
+  const { setCurrUser } = useUserContext();
   const { setIsLoading } = useAppContext();
-  
+  const { call: sendAuthLink, loading: sendAuthLinkLoading, error: sendAuthLinkError, result: sendAuthLinkResult, reset: resetSendAuthLink } = useFrappePostCall('wecars.auth.send_auth_link');
+  const { call: verifyToken, loading: verifyTokenLoading, error: verifyTokenError, result: verifyTokenResult, reset: resetVerifyToken } = useFrappePostCall('wecars.auth.verify_token');
   const [currentStep, setCurrentStep] = useState(1); // 1: Email, 2: Profile, 3: Verification
   const [email, setEmail] = useState('');
   const [otpCode, setOtpCode] = useState('');
@@ -34,35 +35,35 @@ export default function Login() {
     const magicToken = urlParams.get('token');
     
     if (magicToken) {
-      verifyToken(magicToken);
+      verifyTokenCall(magicToken);
     }
   }, []);
 
+  // update this to be array of objects with the english as value and the arabic as label
   const emirates = [
-    t('abuDhabi'),
-    t('dubai'), 
-    t('sharjah'),
-    t('ajman'),
-    t('ummAlQuwain'),
-    t('rasAlKhaimah'),
-    t('fujairah')
+    { value: 'Abu Dhabi', label: t('abuDhabi') },
+    { value: 'Dubai', label: t('dubai') },
+    { value: 'Sharjah', label: t('sharjah') },
+    { value: 'Ajman', label: t('ajman') },
+    { value: 'Umm Al Quwain', label: t('ummAlQuwain') },
+    { value: 'Ras Al Khaimah', label: t('rasAlKhaimah') },
+    { value: 'Fujairah', label: t('fujairah') }
   ];
 
   const languages = [
-    t('english'),
-    t('arabic'),
-    t('hindi'),
-    t('urdu'),
-    t('french'),
-    t('german'),
-    t('spanish')
+    { value: 'English', label: t('english') },
+    { value: 'Arabic', label: t('arabic') },
+    { value: 'Hindi', label: t('hindi') },
+    { value: 'Urdu', label: t('urdu') },
+    { value: 'French', label: t('french') },
+    { value: 'German', label: t('german') },
+    { value: 'Spanish', label: t('spanish') }
   ];
 
   const contactMethods = [
-    t('email'),
-    t('sms'),
-    t('whatsapp'),
-    t('phone')
+    { value: 'Email', label: t('email') },
+    { value: 'SMS', label: t('sms') },
+    { value: 'Phone', label: t('phone') }
   ];
 
   const handleEmailSubmit = async (e) => {
@@ -77,9 +78,9 @@ export default function Login() {
 
     try {
       setIsLoading(true);
-      // const result = await callFrappeMethod('wecars.auth.send_auth_link', { 
-      //   email: email 
-      // });
+      const result = await sendAuthLink( { 
+        email: email 
+      });
 
       if (result.message.error && result.message.required_fields) {
         setRequiredFields(result.message.required_fields);
@@ -113,10 +114,10 @@ export default function Login() {
 
     try {
       setIsLoading(true);
-      // const result = await callFrappeMethod('wecars.auth.send_auth_link', { 
-      //   email: email,
-      //   user_data: userData 
-      // });
+      const result = await sendAuthLink( { 
+        email: email,
+        user_data: userData 
+      });
 
       if (result.message.success) {
         setOtpLength(result.message.otp_length || 6);
@@ -145,10 +146,10 @@ export default function Login() {
 
     try {
       setIsLoading(true);
-      // const result = await callFrappeMethod('wecars.auth.verify_token', { 
-      //   token: otpCode,
-      //   email: email 
-      // });
+      const result = await verifyToken( { 
+        token: otpCode,
+        email: email 
+      });
 
       if (result.message.success) {
         handleSuccessfulAuth(result.message);
@@ -163,25 +164,6 @@ export default function Login() {
     }
   };
 
-  const verifyToken = async (token) => {
-    try {
-      setIsLoading(true);
-      // const result = await callFrappeMethod('wecars.auth.verify_token', { 
-      //   token: token 
-      // });
-
-      if (result.message.success) {
-        handleSuccessfulAuth(result.message);
-      } else {
-        setError(result.message.error || 'Invalid or expired link');
-      }
-    } catch (error) {
-      console.error('Error verifying token:', error);
-      setError('Failed to verify authentication link');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleSuccessfulAuth = (response) => {
     const { api_key, api_secret, user } = response;
@@ -192,7 +174,7 @@ export default function Login() {
     localStorage.setItem('wecars_user', JSON.stringify(user));
     
     // Update user context
-    setUser(user);
+    setCurrUser(user);
     
     // Navigate to dashboard
     navigate('/frontend/dashboard');
@@ -276,7 +258,7 @@ export default function Login() {
   );
 
   const renderStep2 = () => (
-    <div className="max-w-md mx-auto">
+    <div className="max-w-md mx-auto my-12">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -331,7 +313,7 @@ export default function Login() {
             >
               <option value="">Select Emirate</option>
               {emirates.map((emirate) => (
-                <option key={emirate} value={emirate}>{emirate}</option>
+                <option key={emirate.value} value={emirate.value}>{emirate.label}</option>
               ))}
             </select>
           </div>
@@ -360,7 +342,7 @@ export default function Login() {
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             >
               {languages.map((language) => (
-                <option key={language} value={language}>{language}</option>
+                <option key={language.value} value={language.value}>{language.label}</option>
               ))}
             </select>
           </div>
@@ -375,7 +357,7 @@ export default function Login() {
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             >
               {contactMethods.map((method) => (
-                <option key={method} value={method}>{method}</option>
+                <option key={method.value} value={method.value}>{method.label}</option>
               ))}
             </select>
           </div>
@@ -389,7 +371,7 @@ export default function Login() {
             </div>
           )}
 
-          <div className="flex space-x-4">
+          <div className="flex gap-4">
             <button
               type="button"
               onClick={() => setCurrentStep(1)}

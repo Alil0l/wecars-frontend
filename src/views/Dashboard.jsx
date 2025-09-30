@@ -1,45 +1,28 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import { useUserContext } from '../contexts/UserContext';
+import { useDashboard } from '../hooks/useDashboard';
  
 import { motion } from 'framer-motion';
-import Typewriter from 'react-typewriter-effect';
 import Icon from '../components/Icons';
 
 export default function Dashboard() {
   const { t } = useTranslation();
   const { theme } = useTheme();
   const navigate = useNavigate();
-  const { user } = useUserContext();
+  const { currUser } = useUserContext();
   const [searchTerm, setSearchTerm] = useState('');
-  const [submissions, setSubmissions] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchSubmissions();
-  }, []);
-
-  const fetchSubmissions = async () => {
-    try {
-      setLoading(true);
-      // const result = await callFrappeMethod('frappe.client.get_list', {
-      //   doctype: 'WC Car Submission',
-      //   filters: { customer_email: user?.email },
-      //   fields: ['name', 'submission_id', 'make', 'model', 'trim', 'status', 'auto_valuation', 'manual_valuation', 'final_offer', 'creation'],
-      //   order_by: 'creation desc'
-      // });
-      
-      if (result.message) {
-        setSubmissions(result.message);
-      }
-    } catch (error) {
-      console.error('Error fetching submissions:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  
+  // Use dashboard hook
+  const { 
+    submissions, 
+    submissionsLoading: loading, 
+    submissionsError, 
+    refreshSubmissions,
+    statusCounts 
+  } = useDashboard();
 
   const quickActions = [
     {
@@ -145,12 +128,7 @@ export default function Dashboard() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            {t('welcomeBack') || 'Welcome Back'}, <Typewriter
-              text={[user?.first_name || 'User', 'Valued Customer', 'Car Owner']}
-              typeSpeed={100}
-              deleteSpeed={50}
-              loop={true}
-            />!
+            {t('welcomeBack') || 'Welcome Back'}, {currUser?.full_name || 'User'}!
           </motion.h1>
           <motion.p 
             className="text-gray-600 dark:text-gray-400"

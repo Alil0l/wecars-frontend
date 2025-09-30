@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useFrappeGetDocList } from 'frappe-react-sdk';
+import { toast } from 'react-toastify';
  
 import InspectionVoucher from '../components/InspectionVoucher';
 import FinalOfferCard from '../components/FinalOfferCard';
@@ -10,32 +12,19 @@ export default function SubmissionDetails() {
   const { submissionId } = useParams();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [submission, setSubmission] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (submissionId) {
-      fetchSubmissionDetails();
+  
+  // Use frappe-react-sdk to fetch submission details
+  const { data: submissions, error, isValidating, mutate } = useFrappeGetDocList(
+    'WC Car Submission',
+    {
+      filters: [['submission_id', '=', submissionId]],
+      fields: ['*'],
+      limit: 1
     }
-  }, [submissionId]);
+  );
 
-  const fetchSubmissionDetails = async () => {
-    try {
-      setLoading(true);
-      // const result = await callFrappeMethod('frappe.client.get', {
-      //   doctype: 'WC Car Submission',
-      //   filters: { submission_id: submissionId }
-      // });
-      
-      if (result.message) {
-        setSubmission(result.message);
-      }
-    } catch (error) {
-      console.error('Error fetching submission details:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const submission = submissions?.[0];
+  const loading = isValidating;
 
   const getStatusColor = (status) => {
     const statusColors = {
@@ -83,11 +72,14 @@ export default function SubmissionDetails() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      toast.success(`${filename} downloaded successfully!`);
+    } else {
+      toast.error('Document not available for download');
     }
   };
 
   const handleSubmissionUpdate = () => {
-    fetchSubmissionDetails(); // Refresh data
+    mutate(); // Refresh data using SWR mutate
   };
 
   if (loading) {

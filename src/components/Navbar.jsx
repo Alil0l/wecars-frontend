@@ -36,14 +36,8 @@ export default function Navbar() {
   const [isLangOpen, setIsLangOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { language, changeLanguage, languages, isRTL } = useLanguage();
-  // const { user, logout } = useUserContext();
-  const [user, setUser] = useState({
-    first_name: 'John',
-    email: 'john@example.com',
-  });
-  const logout = () => {
-    setUser(null);
-  };
+  const { currUser: user, logout } = useUserContext();
+  
   const { t } = useTranslation();
   const navigate = useNavigate();
   const langDropdownRef = useRef(null);

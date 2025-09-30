@@ -5,7 +5,6 @@ import { useUserContext } from '../contexts/UserContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { motion } from 'framer-motion';
-import Typewriter from 'react-typewriter-effect';
 import Icon from '../components/Icons';
 
 export default function Landing() {
@@ -137,15 +136,7 @@ export default function Landing() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
             >
-              {t('getYourCar') || 'Get Your Car\'s'}
-              <span className="block text-purple-400">
-                <Typewriter
-                  text={[t('trueValue') || 'True Value', t('bestPrice') || 'Best Price', t('marketValue') || 'Market Value']}
-                  typeSpeed={100}
-                  deleteSpeed={50}
-                  loop={true}
-                />
-              </span>
+              {t('getYourCar') || 'Get Your Car\'s'} <span className="block text-purple-400">{t('trueValue') || 'True Value'}</span>
             </motion.h1>
             <motion.p 
               className="text-xl mb-8 text-gray-700 dark:text-gray-300 max-w-2xl mx-auto"

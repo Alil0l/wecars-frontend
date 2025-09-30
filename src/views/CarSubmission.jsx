@@ -3,18 +3,17 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useUserContext } from '../contexts/UserContext';
 import { useAppContext } from '../contexts/AppContext';
-// import { callFrappeMethod, callFrappeMethodWithFiles, setupRealtimeListeners, cleanupRealtimeListeners } from '../utils/api';
+import { useSubmission } from '../hooks/useSubmission';
+import { toast } from 'react-toastify';
 import Icon from '../components/Icons';
 
 export default function CarSubmission() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user } = useUserContext();
+  const { currUser } = useUserContext();
   const { setIsLoading } = useAppContext();
   
   const [currentStep, setCurrentStep] = useState(1);
-  const [submissionId, setSubmissionId] = useState(null);
-  const [extractedData, setExtractedData] = useState(null);
   const [formData, setFormData] = useState({
     make: '',
     model: '',
@@ -25,7 +24,8 @@ export default function CarSubmission() {
     specs: '',
     vehicle_category: '',
     owner_name: '',
-    transmission: ''
+    transmission: '',
+    trim_id: ''
   });
   const [availableModels, setAvailableModels] = useState([]);
   const [availableTrims, setAvailableTrims] = useState([]);
@@ -37,6 +37,25 @@ export default function CarSubmission() {
     back: null,
     pdf: null
   });
+
+  // Use submission hook
+  const {
+    submissionId,
+    extractedData,
+    setExtractedData,
+    submissionStatus,
+    createSubmissionWithDocuments,
+    confirmAndUpdateVehicleData,
+    checkSubmissionStatus,
+    createLoading,
+    createError,
+    confirmLoading,
+    confirmError,
+    fileUploadLoading,
+    progress,
+    fileUploadError,
+    resetSubmission
+  } = useSubmission();
 
   const transmissionOptions = [
     t('automatic'),
@@ -61,33 +80,28 @@ export default function CarSubmission() {
     loadVehicleData();
   }, []);
 
-  // Real-time event listeners
+  // Check submission status periodically
   useEffect(() => {
-    if (submissionId) {
-      const callbacks = {
-        onProcessingStarted: (data) => {
-          if (data.submission_id === submissionId) {
-            setCurrentStep(2);
-          }
-        },
-        onExtractionCompleted: (data) => {
-          if (data.submission_id === submissionId) {
+    if (submissionId && currentStep === 2) {
+      const interval = setInterval(async () => {
+        const status = await checkSubmissionStatus();
+        if (status?.message) {
+          const data = status.message;
+          if (data.status === 'extraction_completed' && data.extracted_data) {
             setExtractedData(data.extracted_data);
             setCurrentStep(3);
-          }
-        },
-        onExtractionFailed: (data) => {
-          if (data.submission_id === submissionId) {
+            clearInterval(interval);
+          } else if (data.status === 'extraction_failed') {
             setCurrentStep(1);
-            alert(t('aiExtractionFailed'));
+            toast.error(t('aiExtractionFailed'));
+            clearInterval(interval);
           }
         }
-      };
+      }, 3000); // Check every 3 seconds
 
-      const cleanup = setupRealtimeListeners(submissionId, callbacks);
-      return cleanup;
+      return () => clearInterval(interval);
     }
-  }, [submissionId]);
+  }, [submissionId, currentStep, checkSubmissionStatus, t]);
 
   const loadVehicleData = async () => {
     try {
@@ -115,7 +129,33 @@ export default function CarSubmission() {
     }
   };
 
+  // const uploadingFile = async (file) => {
+  //   // const formData = new FormData();
+  //   // formData.append('file', file);
+  //   // formData.append('is_private', true);
+  //   // formData.append('doctype', 'WC Car Submission');
+  //   // // formData.append('fieldname', type);
+  //   // fetch('/api/method/upload_file', {
+  //   //   method: 'POST',
+  //   //   body: formData,
+  //   //   headers: {
+  //   //     // 'Authorization': `token ${api_key}:${api_secret}`,
+  //   //     'X-Frappe-CSRF-Token': window.csrf_token
+  //   //   }
+  //   // });
+  //   // test post call
+  //   fetch('/api/resource/User/Administrator', {
+  //     method: 'PUT',
+  //     body: JSON.stringify({ language: 'ar' }),
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //       'X-Frappe-CSRF-Token': window.csrf_token
+  //     }
+  //   });
+  // }
   const handleFileUpload = (file, type) => {
+    // console.log('File uploaded:', file, type);
+    // uploadingFile(file);
     setUploadedFiles(prev => ({
       ...prev,
       [type]: file
@@ -133,7 +173,7 @@ export default function CarSubmission() {
   };
 
   const handleModelChange = (selectedModel) => {
-    setFormData(prev => ({ ...prev, model: selectedModel, trim: '' }));
+    setFormData(prev => ({ ...prev, model: selectedModel, trim: '', trim_id: '' }));
     
     const filteredTrims = trims.filter(trim => 
       trim.make.toLowerCase() === formData.make.toLowerCase() &&
@@ -142,35 +182,40 @@ export default function CarSubmission() {
     setAvailableTrims(filteredTrims);
   };
 
+  const handleTrimChange = (selectedTrim) => {
+    const selectedTrimData = availableTrims.find(trim => trim.trim === selectedTrim);
+    setFormData(prev => ({ 
+      ...prev, 
+      trim: selectedTrim,
+      trim_id: selectedTrimData?.trim_id || '',
+      make: selectedTrimData?.make || prev.make,
+      model: selectedTrimData?.model || prev.model
+    }));
+  };
+
   const submitDocuments = async () => {
     try {
       setIsLoading(true);
       
-      const formDataToSend = new FormData();
-      formDataToSend.append('cmd', 'wecars.submission.create_submission_with_documents');
-      formDataToSend.append('customer_email', user.email);
-      
-      if (uploadedFiles.front) {
-        formDataToSend.append('license_front_file', uploadedFiles.front);
-      }
-      if (uploadedFiles.back) {
-        formDataToSend.append('license_back_file', uploadedFiles.back);
-      }
-      if (uploadedFiles.pdf) {
-        formDataToSend.append('license_pdf_file', uploadedFiles.pdf);
+      if (!currUser?.email) {
+        toast.error(t('userEmailRequired'));
+        return;
       }
 
-      // const result = await callFrappeMethodWithFiles('wecars.submission.create_submission_with_documents', formDataToSend);
+      const result = await createSubmissionWithDocuments(currUser?.email, uploadedFiles);
       
-      if (result.message.success) {
-        setSubmissionId(result.message.submission_id);
+      if (result.success) {
         setCurrentStep(2);
+        // Start polling for status updates
+        setTimeout(() => {
+          checkSubmissionStatus();
+        }, 1000);
       } else {
-        alert(result.message.error || t('failedToSubmitDocuments'));
+        toast.error(result.error || t('failedToSubmitDocuments'));
       }
     } catch (error) {
       console.error('Error submitting documents:', error);
-      alert(t('failedToSubmitDocuments'));
+      toast.error(error.message || t('failedToSubmitDocuments'));
     } finally {
       setIsLoading(false);
     }
@@ -180,20 +225,17 @@ export default function CarSubmission() {
     try {
       setIsLoading(true);
       
-      // const result = await callFrappeMethod('wecars.submission.confirm_and_update_vehicle_data', {
-      //   submission_id: submissionId,
-      //   vehicle_data: formData,
-      //   mileage: parseInt(formData.mileage)
-      // });
+      const result = await confirmAndUpdateVehicleData(submissionId, formData, formData.mileage);
 
-      if (result.message.success) {
+      if (result.success) {
         setCurrentStep(4);
+        toast.success(t('vehicleDataConfirmed'));
       } else {
-        alert(result.message.error || t('failedToConfirmVehicleData'));
+        toast.error(result.error || t('failedToConfirmVehicleData'));
       }
     } catch (error) {
       console.error('Error confirming vehicle data:', error);
-      alert(t('failedToConfirmVehicleData'));
+      toast.error(error.message || t('failedToConfirmVehicleData'));
     } finally {
       setIsLoading(false);
     }
@@ -396,7 +438,7 @@ export default function CarSubmission() {
             </label>
             <select
               value={formData.trim}
-              onChange={(e) => setFormData(prev => ({ ...prev, trim: e.target.value }))}
+              onChange={(e) => handleTrimChange(e.target.value)}
               disabled={!formData.model}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white disabled:opacity-50"
             >
@@ -499,7 +541,7 @@ export default function CarSubmission() {
           </button>
           <button
             onClick={confirmVehicleData}
-            disabled={!formData.make || !formData.model || !formData.trim || !formData.mileage}
+            disabled={!formData.make || !formData.model || !formData.trim || !formData.trim_id || !formData.mileage}
             className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {t('confirmSubmit')}

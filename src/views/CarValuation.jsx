@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../contexts/ThemeContext';
 import { motion } from 'framer-motion';
-import Typewriter from 'react-typewriter-effect';
 import Icon from '../components/Icons';
 
 export default function CarValuation() {
@@ -353,12 +352,7 @@ export default function CarValuation() {
                 <span className="text-white font-bold text-sm">W</span>
               </motion.div>
               <span className="font-bold text-xl text-gray-900 dark:text-white">
-                <Typewriter
-                  text={['Car Valuation', 'Vehicle Assessment', 'Price Estimation']}
-                  typeSpeed={100}
-                  deleteSpeed={50}
-                  loop={true}
-                />
+                Car Valuation
               </span>
             </motion.div>
             
