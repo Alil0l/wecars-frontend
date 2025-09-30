@@ -282,6 +282,7 @@
     "step": "Step",
     "of": "of",
     "chassisNumber": "Chassis Number",
+    "countdownSeconds": "seconds",
     "transmission": "Transmission",
     "vehicleCategory": "Vehicle Category",
     "loadingSubmissions": "Loading submissions...",

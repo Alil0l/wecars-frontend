@@ -28,7 +28,7 @@ export default function CarValuation() {
   const { call: confirmVehicleData, loading: confirmLoading, error: confirmError } = useFrappePostCall('wecars.submission.confirm_and_update_vehicle_data');
   const { call: processImage, loading: processLoading, error: processError } = useFrappePostCall('wecars.ai.process_license_image');
   const { upload: uploadFile, loading: fileUploadLoading, progress: uploadProgress, error: fileUploadError } = useFrappeFileUpload();
-  
+  const [finalResult, setFinalResult] = useState(null);
   const [formData, setFormData] = useState({
     vin: '',
     make: '',
@@ -159,11 +159,11 @@ export default function CarValuation() {
         email: formData.email
       });
       
-      if (result.success) {
+      if (result.message.success) {
         setCountdown(60);
         toast.success(t('verificationCodeSent') || 'Verification code sent');
       } else {
-        toast.error(result.error);
+        toast.error(result.message.error);
       }
     } catch (error) {
       console.error('Failed to send verification code:', error);
@@ -181,11 +181,17 @@ export default function CarValuation() {
         email: formData.email
       });
       
-      if (result.success) {
+      if (result.message.success) {
+        setFinalResult(result.message);
         setCurrentStep(4);
-        toast.success(t('emailVerified') || 'Email verified successfully');
+
+        localStorage.setItem('wecars_user', JSON.stringify(result.message.user));
+        localStorage.setItem('wecars_api_key', result.message.api_key);
+        localStorage.setItem('wecars_api_secret', result.message.api_secret);
+        localStorage.setItem('wecars_user', JSON.stringify(result.message.user));
+        toast.success(t('Verified') || 'verified successfully');
       } else {
-        toast.error(result.error);
+        toast.error(result.message.error);
       }
     } catch (error) {
       console.error('Verification failed:', error);
@@ -462,7 +468,7 @@ export default function CarValuation() {
         </button>
         
         <button 
-          onClick={() => setCurrentStep(3)}
+          onClick={() => {setCurrentStep(3); sendVerificationCode()}}
           className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200 flex items-center gap-2"
         >
           <span>{t('continue')}</span>
@@ -525,7 +531,30 @@ export default function CarValuation() {
       </div>
     </div>
   );
+/*
+response will be like this:
+{
+    "message": {
+        "success": true,
+        "message": "Authentication successful",
+        "user": {
+            "email": "aliwrker011@gmail.com",
+            "first_name": "Ali mostafa",
+            "user_type": "System User",
+            "full_name": "Ali mostafa",
+            "mobile_number": "+971 123132132132",
+            "emirate": "Abu Dhabi",
+            "emirates_id": "7842313213213",
+            "preferred_language": "English",
+            "preferred_contact_method": "SMS",
+            "verification_status": "Verified"
+        },
+        "api_key": "a17311630dc233e",
+        "api_secret": "76db8aaad6cb27e"
+    }
+}
 
+*/ 
   const renderStep4 = () => (
     <div className="max-w-2xl mx-auto">
       <div className="text-center mb-8">
@@ -542,15 +571,15 @@ export default function CarValuation() {
           <div className="space-y-3">
             <div className="flex justify-between">
               <span className="text-gray-600 dark:text-gray-400">{t('name')}:</span>
-              <span className="text-gray-900 dark:text-white">Yamen Zakhour</span>
+              <span className="text-gray-900 dark:text-white">{finalResult?.user?.full_name}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600 dark:text-gray-400">{t('email')}:</span>
-              <span className="text-gray-900 dark:text-white">zakhouryamen@gmail.com</span>
+              <span className="text-gray-900 dark:text-white">{finalResult?.user?.email}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600 dark:text-gray-400">{t('phone')}:</span>
-              <span className="text-gray-900 dark:text-white">-</span>
+              <span className="text-gray-900 dark:text-white">{finalResult?.user?.mobile_number}</span>
             </div>
           </div>
         </div>
@@ -560,35 +589,35 @@ export default function CarValuation() {
           <div className="space-y-3">
             <div className="flex justify-between">
               <span className="text-gray-600 dark:text-gray-400">{t('vin')}:</span>
-              <span className="text-gray-900 dark:text-white">12345678910111213</span>
+              <span className="text-gray-900 dark:text-white">{finalResult?.user?.vin}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600 dark:text-gray-400">{t('make')}:</span>
-              <span className="text-gray-900 dark:text-white">BMW</span>
+              <span className="text-gray-900 dark:text-white">{finalResult?.user?.make}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600 dark:text-gray-400">{t('model')}:</span>
-              <span className="text-gray-900 dark:text-white">X3</span>
+              <span className="text-gray-900 dark:text-white">{finalResult?.user?.model}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600 dark:text-gray-400">{t('trim')}:</span>
-              <span className="text-gray-900 dark:text-white">X3 xDrive30i</span>
+              <span className="text-gray-900 dark:text-white">{finalResult?.user?.trim}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600 dark:text-gray-400">{t('manufacturingYear')}:</span>
-              <span className="text-gray-900 dark:text-white">2025</span>
+              <span className="text-gray-900 dark:text-white">{finalResult?.user?.year}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600 dark:text-gray-400">{t('owner')}:</span>
-              <span className="text-gray-900 dark:text-white">Y</span>
+              <span className="text-gray-900 dark:text-white">{finalResult?.user?.owner_name}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600 dark:text-gray-400">{t('registrationDate')}:</span>
-              <span className="text-gray-900 dark:text-white">1997-10-05</span>
+              <span className="text-gray-900 dark:text-white">{finalResult?.user?.registration_date}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600 dark:text-gray-400">{t('licenseExpiry')}:</span>
-              <span className="text-gray-900 dark:text-white">1998-10-04</span>
+              <span className="text-gray-900 dark:text-white">{finalResult?.user?.license_expiry}</span>
             </div>
           </div>
         </div>
@@ -676,7 +705,7 @@ export default function CarValuation() {
 
       {/* Content */}
       <motion.div 
-        className="max-w-7xl min-w-[40%] mx-auto px-4 sm:px-6 lg:px-8 py-8"
+        className="max-w-7xl min-w-[320px] mx-auto px-4 sm:px-6 lg:px-8 py-8"
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 1 }}
