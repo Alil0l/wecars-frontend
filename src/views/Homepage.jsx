@@ -83,7 +83,7 @@ export default function Homepage() {
               {t('heroDescription')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-4 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200 flex items-center justify-center space-x-2">
+              <button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-4 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200 flex items-center justify-center gap-2">
                 <span>{t('startFreeValuation')}</span>
                 <Icon name="arrow-right" size={20} />
               </button>
@@ -215,7 +215,7 @@ export default function Homepage() {
           <p className="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
             {t('ctaDescription')}
           </p>
-          <button className="bg-white text-blue-600 px-8 py-4 rounded-lg font-medium hover:bg-gray-100 transition-colors flex items-center space-x-2 mx-auto">
+          <button className="bg-white text-blue-600 px-8 py-4 rounded-lg font-medium hover:bg-gray-100 transition-colors flex items-center gap-2 mx-auto">
             <span>{t('startYourFreeValuation')}</span>
             <Icon name="arrow-right" size={20} />
           </button>

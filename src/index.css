@@ -24,7 +24,9 @@ body {
   * {
     transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
   }
-
+  #App{
+    overflow-x: hidden;
+  }
   /* RTL Support */
   [dir="rtl"] {
     direction: rtl;
@@ -134,4 +136,24 @@ body {
   /* RTL modal and overlay adjustments */
   .rtl .fixed.inset-0 {
     direction: rtl;
+  }
+
+  .toast-container{
+    @apply max-w-[50%] w-96 mt-4;
+
+    --toastify-icon-color-success{
+      @apply text-green-500;
+    }
+    --toastify-color-progress-success{
+      @apply bg-green-500;
+    }
+  }
+  .toast-className{
+      @apply w-full text-center relative flex flex-row-reverse gap-4 px-2 shadow-md py-2 bg-white text-black border-l-8 text-[#5b4f4f] text-sm font-medium min-h-14 rounded-md justify-between items-center overflow-hidden cursor-pointer mb-2
+  }
+  .toast-body{
+      @apply bg-black text-xl;
+  }
+  .Toastify__close-button{
+      @apply static ml-auto;
   }

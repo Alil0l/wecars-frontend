@@ -43,6 +43,7 @@ export default function App() {
   return (
 	<div id="App">
 	  <FrappeProvider
+	  siteName={window.frappe?.boot?.sitename || 'cars.dev'}
 	  swrConfig={{
 		refreshInterval: 20000,
 		revalidateOnFocus: false,

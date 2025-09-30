@@ -64,7 +64,7 @@ export default function Navbar() {
 
 
   const menuItems = [
-    // { name: t('dashboard'), to: '/frontend/dashboard' },
+    { name: t('dashboard'), to: '/frontend/dashboard' },
     { name: t('home'), to: '/frontend/' },
     { name: t('submission'), to: '/frontend/submission' },
     { name: t('valuation'), to: '/frontend/valuation' },
@@ -110,12 +110,12 @@ export default function Navbar() {
           </div>
 
           {/* Right side controls */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-4">
             {/* Language Switcher */}
             <div className="relative" ref={langDropdownRef}>
               <button
                 onClick={() => setIsLangOpen(!isLangOpen)}
-                className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 rounded-md text-sm font-medium transition-colors"
               >
                 <span className="text-lg">
                   {languages.find(lang => lang.code === language)?.flag || '🌐'}
@@ -150,7 +150,7 @@ export default function Navbar() {
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 rounded-md text-sm font-medium transition-colors"
             >
               <Icon name={theme === 'light' ? 'sun' : 'moon'} size={20} />
               {/* <span className="hidden sm:inline">
@@ -159,10 +159,10 @@ export default function Navbar() {
             </button>
 
             {/* User Menu - Desktop Only */}
-            <div className="hidden lg:flex items-center space-x-4">
+            <div className="hidden lg:flex items-center gap-4">
               {user ? (
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
                     <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                       <span className="text-white font-bold text-sm">
                         {user?.first_name ? user?.first_name[0] : user?.email[0].toUpperCase()}
@@ -181,7 +181,7 @@ export default function Navbar() {
                   </button>
                 </div>
               ) : (
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center gap-4">
                   <button
                     onClick={() => navigate('/frontend/login')}
                     className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 rounded-md text-sm font-medium transition-colors"
@@ -227,7 +227,7 @@ export default function Navbar() {
               <div className="border-t border-gray-200 dark:border-gray-700">
                 {user ? (
                   <div className="px-3 py-2">
-                    <div className="flex items-center space-x-3 mb-4">
+                    <div className="flex items-center gap-3 mb-4">
                       <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                         <span className="text-white font-bold text-sm">
                           {user.first_name ? user.first_name[0] : user.email[0].toUpperCase()}

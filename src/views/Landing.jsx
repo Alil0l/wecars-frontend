@@ -412,7 +412,7 @@ export default function Landing() {
                   "{testimonials[currentTestimonial].text}"
                 </motion.blockquote>
                 <motion.div 
-                  className="flex items-center justify-center space-x-4"
+                  className="flex items-center justify-center gap-4"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.7 }}
@@ -436,7 +436,7 @@ export default function Landing() {
               </div>
             </motion.div>
             
-            <div className="flex justify-center mt-8 space-x-2">
+            <div className="flex justify-center mt-8 gap-2">
               {testimonials.map((_, index) => (
                 <button
                   key={index}
@@ -519,7 +519,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <div className="flex items-center space-x-3 mb-4">
+              <div className="flex items-center gap-3 mb-4">
                 <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                   <span className="text-white font-bold text-sm">W</span>
                 </div>

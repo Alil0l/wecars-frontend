@@ -12,6 +12,7 @@ const contextClass = {
   default: "",
   dark: " font-gray-300",
 };
+
 export default function Layout() {
   const { isLoading } = useAppContext();
 
@@ -35,3 +36,21 @@ export default function Layout() {
     </div>
   );
 }   
+
+/*
+.toast-container{
+    @apply max-w-[50%] w-96 mt-4;
+
+    --toastify-icon-color-success: #00a896;
+    --toastify-color-progress-success: #00a896;
+}
+.toast-className{
+    @apply w-full text-center relative flex flex-row-reverse gap-4 px-2 shadow-md py-2 bg-white text-black border-l-8 text-[#5b4f4f] text-sm font-medium min-h-14 rounded-md justify-between items-center overflow-hidden cursor-pointer mb-2
+}
+.toast-body{
+    @apply bg-black text-xl;
+}
+.Toastify__close-button{
+    @apply static ml-auto;
+}
+*/ 

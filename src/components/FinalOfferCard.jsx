@@ -108,7 +108,7 @@ export default function FinalOfferCard({ submission, onUpdate }) {
           <button
             onClick={acceptOffer}
             disabled={loading}
-            className="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+            className="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading ? (
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
@@ -123,7 +123,7 @@ export default function FinalOfferCard({ submission, onUpdate }) {
           <button
             onClick={() => setShowRejectModal(true)}
             disabled={loading}
-            className="flex-1 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+            className="flex-1 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             <Icon name="close" size={20} />
             <span>{t('declineOffer') || 'Decline Offer'}</span>
@@ -152,7 +152,7 @@ export default function FinalOfferCard({ submission, onUpdate }) {
               />
             </div>
 
-            <div className="flex space-x-4">
+            <div className="flex gap-4">
               <button
                 onClick={() => {
                   setShowRejectModal(false);

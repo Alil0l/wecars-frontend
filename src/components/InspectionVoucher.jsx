@@ -52,7 +52,7 @@ export default function InspectionVoucher({ submissionId, inspectionDate, locati
           <div>
             <h3 className="text-xl font-bold mb-4">{t('inspectionDetails') || 'Inspection Details'}</h3>
             <div className="space-y-3">
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center gap-3">
                 <Icon name="location" size={20} />
                 <div>
                   <p className="font-medium">{t('location') || 'Location'}</p>
@@ -60,7 +60,7 @@ export default function InspectionVoucher({ submissionId, inspectionDate, locati
                 </div>
               </div>
               
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center gap-3">
                 <Icon name="clock" size={20} />
                 <div>
                   <p className="font-medium">{t('duration') || 'Duration'}</p>
@@ -68,7 +68,7 @@ export default function InspectionVoucher({ submissionId, inspectionDate, locati
                 </div>
               </div>
               
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center gap-3">
                 <Icon name="calendar" size={20} />
                 <div>
                   <p className="font-medium">{t('validity') || 'Validity'}</p>
@@ -107,7 +107,7 @@ export default function InspectionVoucher({ submissionId, inspectionDate, locati
       </div>
 
       <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-        <div className="flex items-start space-x-3">
+        <div className="flex items-start gap-3">
           <Icon name="warning" size={20} className="text-yellow-600 dark:text-yellow-400 mt-0.5" />
           <div>
             <h4 className="font-medium text-yellow-800 dark:text-yellow-200 mb-1">

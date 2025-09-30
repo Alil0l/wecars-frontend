@@ -1,0 +1,1423 @@
+[
+  {
+    "logo": "/assets/wecars/images/car_logos/aito_logo.png",
+    "make": "AITO",
+    "make_ar": "AITO",
+    "name": "AITO",
+    "slug": "aito"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/alfa-romeo_logo.png",
+    "make": "Alfa Romeo",
+    "make_ar": "الفا روميو",
+    "name": "Alfa Romeo",
+    "slug": "alfa-romeo"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/ariel_logo.png",
+    "make": "Ariel",
+    "make_ar": "Ariel",
+    "name": "Ariel",
+    "slug": "ariel"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/ashok-leyland_logo.png",
+    "make": "Ashok Leyland",
+    "make_ar": "Ashok Leyland",
+    "name": "Ashok Leyland",
+    "slug": "ashok-leyland"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/aston-martin_logo.png",
+    "make": "Aston Martin",
+    "make_ar": "أستون مارتن",
+    "name": "Aston Martin",
+    "slug": "aston-martin"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/audi_logo.png",
+    "make": "Audi",
+    "make_ar": "أودي",
+    "name": "Audi",
+    "slug": "audi"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/aurus_logo.png",
+    "make": "Aurus",
+    "make_ar": "Aurus",
+    "name": "Aurus",
+    "slug": "aurus"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/austin-healey_logo.png",
+    "make": "Austin-Healey",
+    "make_ar": "Austin-Healey",
+    "name": "Austin-Healey",
+    "slug": "austin-healey"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/avatr_logo.png",
+    "make": "Avatr",
+    "make_ar": "Avatr",
+    "name": "Avatr",
+    "slug": "avatr"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/bmw-alpina_logo.png",
+    "make": "BMW Alpina",
+    "make_ar": "بي ام دبليو ألبينا",
+    "name": "BMW Alpina",
+    "slug": "bmw-alpina"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/can-am_logo.png",
+    "make": "Can-am",
+    "make_ar": "Can-am",
+    "name": "Can-am",
+    "slug": "can-am"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/li-auto_logo.png",
+    "make": "Li Auto",
+    "make_ar": "Li Auto",
+    "name": "Li Auto",
+    "slug": "li-auto"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/bac_logo.png",
+    "make": "BAC",
+    "make_ar": "BAC",
+    "name": "BAC",
+    "slug": "bac"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/baic_logo.png",
+    "make": "BAIC",
+    "make_ar": "بايك",
+    "name": "BAIC",
+    "slug": "baic"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/baw_logo.png",
+    "make": "BAW",
+    "make_ar": "BAW",
+    "name": "BAW",
+    "slug": "baw"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/bentley_logo.png",
+    "make": "Bentley",
+    "make_ar": "بنتلي",
+    "name": "Bentley",
+    "slug": "bentley"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/bentley-onyx_logo.png",
+    "make": "Bentley Onyx",
+    "make_ar": "Bentley Onyx",
+    "name": "Bentley Onyx",
+    "slug": "bentley-onyx"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/bestune_logo.png",
+    "make": "Bestune",
+    "make_ar": "Bestune",
+    "name": "Bestune",
+    "slug": "bestune"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/bizzarrini_logo.png",
+    "make": "Bizzarrini",
+    "make_ar": "بيزاريني",
+    "name": "Bizzarrini",
+    "slug": "bizzarrini"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/bmw_logo.png",
+    "make": "BMW",
+    "make_ar": "بي ام دبليو",
+    "name": "BMW",
+    "slug": "bmw"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/borgward_logo.png",
+    "make": "Borgward",
+    "make_ar": "برجورد",
+    "name": "Borgward",
+    "slug": "borgward"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/brilliance_logo.png",
+    "make": "Brilliance",
+    "make_ar": "بريليانس",
+    "name": "Brilliance",
+    "slug": "brilliance"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/bufori_logo.png",
+    "make": "Bufori",
+    "make_ar": "بفوري",
+    "name": "Bufori",
+    "slug": "bufori"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/bugatti_logo.png",
+    "make": "Bugatti",
+    "make_ar": "بوجاتي",
+    "name": "Bugatti",
+    "slug": "bugatti"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/buick_logo.png",
+    "make": "Buick",
+    "make_ar": "بويك",
+    "name": "Buick",
+    "slug": "buick"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/byd_logo.png",
+    "make": "BYD",
+    "make_ar": "بي واي دي",
+    "name": "BYD",
+    "slug": "byd"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/mercedes-benz_logo.png",
+    "make": "Mercedes-Benz",
+    "make_ar": "مرسيدس بنز",
+    "name": "Mercedes-Benz",
+    "slug": "mercedes-benz"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/cadillac_logo.png",
+    "make": "Cadillac",
+    "make_ar": "كاديلاك",
+    "name": "Cadillac",
+    "slug": "cadillac"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/caterham_logo.png",
+    "make": "Caterham",
+    "make_ar": "كاترهام",
+    "name": "Caterham",
+    "slug": "caterham"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/cevo_logo.png",
+    "make": "CEVO",
+    "make_ar": "CEVO",
+    "name": "CEVO",
+    "slug": "cevo"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/changan_logo.png",
+    "make": "Changan",
+    "make_ar": "تشانجان",
+    "name": "Changan",
+    "slug": "changan"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/chery_logo.png",
+    "make": "Chery",
+    "make_ar": "شيري",
+    "name": "Chery",
+    "slug": "chery"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/chevrolet_logo.png",
+    "make": "Chevrolet",
+    "make_ar": "شيفروليه",
+    "name": "Chevrolet",
+    "slug": "chevrolet"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/chrysler_logo.png",
+    "make": "Chrysler",
+    "make_ar": "كرايسلر",
+    "name": "Chrysler",
+    "slug": "chrysler"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/citroen_logo.png",
+    "make": "Citroen",
+    "make_ar": "سيتروين",
+    "name": "Citroen",
+    "slug": "citroen"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/cmc_logo.png",
+    "make": "CMC",
+    "make_ar": "سي إم سي",
+    "name": "CMC",
+    "slug": "cmc"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/cupra_logo.png",
+    "make": "Cupra",
+    "make_ar": "Cupra",
+    "name": "Cupra",
+    "slug": "cupra"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/lynk-co_logo.png",
+    "make": "Lynk & Co",
+    "make_ar": "Lynk & Co",
+    "name": "Lynk & Co",
+    "slug": "lynk-co"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/dacia_logo.png",
+    "make": "Dacia",
+    "make_ar": "داسيا",
+    "name": "Dacia",
+    "slug": "dacia"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/daewoo_logo.png",
+    "make": "Daewoo",
+    "make_ar": "دايو",
+    "name": "Daewoo",
+    "slug": "daewoo"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/daihatsu_logo.png",
+    "make": "Daihatsu",
+    "make_ar": "دايهاتسو",
+    "name": "Daihatsu",
+    "slug": "daihatsu"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/dallara_logo.png",
+    "make": "Dallara",
+    "make_ar": "Dallara",
+    "name": "Dallara",
+    "slug": "dallara"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/datsun_logo.png",
+    "make": "Datsun",
+    "make_ar": "داتسون",
+    "name": "Datsun",
+    "slug": "datsun"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/dayun_logo.png",
+    "make": "Dayun",
+    "make_ar": "Dayun",
+    "name": "Dayun",
+    "slug": "dayun"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/delorean_logo.png",
+    "make": "DeLorean",
+    "make_ar": "دي لوريان",
+    "name": "DeLorean",
+    "slug": "delorean"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/denza_logo.png",
+    "make": "Denza",
+    "make_ar": "Denza",
+    "name": "Denza",
+    "slug": "denza"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/devinci_logo.png",
+    "make": "Devinci",
+    "make_ar": "Devince",
+    "name": "Devinci",
+    "slug": "devinci"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/dfsk_logo.png",
+    "make": "DFSK",
+    "make_ar": "دي اف اس كيه",
+    "name": "DFSK",
+    "slug": "dfsk"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/dodge_logo.png",
+    "make": "Dodge",
+    "make_ar": "دودج",
+    "name": "Dodge",
+    "slug": "dodge"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/dongfeng_logo.png",
+    "make": "DongFeng",
+    "make_ar": "دونج فينج",
+    "name": "DongFeng",
+    "slug": "dongfeng"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/dorcen_logo.png",
+    "make": "Dorcen",
+    "make_ar": "دورسين",
+    "name": "Dorcen",
+    "slug": "dorcen"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/entegra_logo.png",
+    "make": "Entegra",
+    "make_ar": "Entegra",
+    "name": "Entegra",
+    "slug": "entegra"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/equus_logo.png",
+    "make": "Equus",
+    "make_ar": "ايكوس",
+    "name": "Equus",
+    "slug": "equus"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/exeed_logo.png",
+    "make": "Exeed",
+    "make_ar": "اكسيد",
+    "name": "Exeed",
+    "slug": "exeed"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/faw_logo.png",
+    "make": "Faw",
+    "make_ar": "فاو",
+    "name": "Faw",
+    "slug": "faw"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/fengon_logo.png",
+    "make": "Fengon",
+    "make_ar": "فينغون",
+    "name": "Fengon",
+    "slug": "fengon"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/fenyr_logo.png",
+    "make": "Fenyr",
+    "make_ar": "فينير",
+    "name": "Fenyr",
+    "slug": "fenyr"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/ferrari_logo.png",
+    "make": "Ferrari",
+    "make_ar": "فيراري",
+    "name": "Ferrari",
+    "slug": "ferrari"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/ferrari-onyx_logo.png",
+    "make": "Ferrari Onyx",
+    "make_ar": "Ferrari Onyx",
+    "name": "Ferrari Onyx",
+    "slug": "ferrari-onyx"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/fiat_logo.png",
+    "make": "Fiat",
+    "make_ar": "فيات",
+    "name": "Fiat",
+    "slug": "fiat"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/fisker_logo.png",
+    "make": "Fisker",
+    "make_ar": "فيسكر",
+    "name": "Fisker",
+    "slug": "fisker"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/force_logo.png",
+    "make": "Force",
+    "make_ar": "فورس",
+    "name": "Force",
+    "slug": "force"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/ford_logo.png",
+    "make": "Ford",
+    "make_ar": "فورد",
+    "name": "Ford",
+    "slug": "ford"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/forthing_logo.png",
+    "make": "Forthing",
+    "make_ar": "Forthing",
+    "name": "Forthing",
+    "slug": "forthing"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/foton_logo.png",
+    "make": "Foton",
+    "make_ar": "فوتون",
+    "name": "Foton",
+    "slug": "foton"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/gac_logo.png",
+    "make": "GAC",
+    "make_ar": "جي أي سي",
+    "name": "GAC",
+    "slug": "gac"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/gac-gonow_logo.png",
+    "make": "GAC Gonow",
+    "make_ar": "جي أي سي جونو",
+    "name": "GAC Gonow",
+    "slug": "gac-gonow"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/geely_logo.png",
+    "make": "Geely",
+    "make_ar": "جيلي",
+    "name": "Geely",
+    "slug": "geely"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/genesis_logo.png",
+    "make": "Genesis",
+    "make_ar": "جينيسيس",
+    "name": "Genesis",
+    "slug": "genesis"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/genty_logo.png",
+    "make": "Genty",
+    "make_ar": "Genty",
+    "name": "Genty",
+    "slug": "genty"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/gmc_logo.png",
+    "make": "GMC",
+    "make_ar": "جي ام سي",
+    "name": "GMC",
+    "slug": "gmc"
+  },
+  {
+    "logo": null,
+    "make": "Grand Tiger",
+    "make_ar": "جراند تيغر",
+    "name": "Grand Tiger",
+    "slug": "grand-tiger"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/great-wall_logo.png",
+    "make": "Great Wall",
+    "make_ar": "جريت-وال",
+    "name": "Great Wall",
+    "slug": "great-wall"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/gumpert_logo.png",
+    "make": "Gumpert",
+    "make_ar": "غومبيرت",
+    "name": "Gumpert",
+    "slug": "gumpert"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/haval_logo.png",
+    "make": "Haval",
+    "make_ar": "هافال",
+    "name": "Haval",
+    "slug": "haval"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/higer_logo.png",
+    "make": "Higer",
+    "make_ar": "Higer",
+    "name": "Higer",
+    "slug": "higer"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/hino_logo.png",
+    "make": "Hino",
+    "make_ar": "Hino",
+    "name": "Hino",
+    "slug": "hino"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/hiphi_logo.png",
+    "make": "HiPhi",
+    "make_ar": "HiPhi",
+    "name": "HiPhi",
+    "slug": "hiphi"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/honda_logo.png",
+    "make": "Honda",
+    "make_ar": "هوندا",
+    "name": "Honda",
+    "slug": "honda"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/hongqi_logo.png",
+    "make": "Hongqi",
+    "make_ar": "هونشي",
+    "name": "Hongqi",
+    "slug": "hongqi"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/hummer_logo.png",
+    "make": "Hummer",
+    "make_ar": "هامر",
+    "name": "Hummer",
+    "slug": "hummer"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/hycan_logo.png",
+    "make": "Hycan",
+    "make_ar": "Hycan",
+    "name": "Hycan",
+    "slug": "hycan"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/hyundai_logo.png",
+    "make": "Hyundai",
+    "make_ar": "هيونداي",
+    "name": "Hyundai",
+    "slug": "hyundai"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/ineos_logo.png",
+    "make": "INEOS",
+    "make_ar": "INEOS",
+    "name": "INEOS",
+    "slug": "ineos"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/infiniti_logo.png",
+    "make": "Infiniti",
+    "make_ar": "إنفينيتي",
+    "name": "Infiniti",
+    "slug": "infiniti"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/international_logo.png",
+    "make": "International",
+    "make_ar": "انترناشونال",
+    "name": "International",
+    "slug": "international"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/isuzu_logo.png",
+    "make": "Isuzu",
+    "make_ar": "ايسوزو",
+    "name": "Isuzu",
+    "slug": "isuzu"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/iveco_logo.png",
+    "make": "Iveco",
+    "make_ar": "Iveco",
+    "name": "Iveco",
+    "slug": "iveco"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/jac_logo.png",
+    "make": "JAC",
+    "make_ar": "جاك",
+    "name": "JAC",
+    "slug": "jac"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/jaecoo_logo.png",
+    "make": "JAECOO",
+    "make_ar": "JAECOO",
+    "name": "JAECOO",
+    "slug": "jaecoo"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/jaguar_logo.png",
+    "make": "Jaguar",
+    "make_ar": "جاكوار",
+    "name": "Jaguar",
+    "slug": "jaguar"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/jetour_logo.png",
+    "make": "Jetour",
+    "make_ar": "جيتور",
+    "name": "Jetour",
+    "slug": "jetour"
+  },
+  {
+    "logo": null,
+    "make": "Ji Yue",
+    "make_ar": "Ji Yue",
+    "name": "Ji Yue",
+    "slug": "ji-yue"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/jinbei_logo.png",
+    "make": "Jinbei",
+    "make_ar": "جنبي",
+    "name": "Jinbei",
+    "slug": "jinbei"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/jmc_logo.png",
+    "make": "JMC",
+    "make_ar": "جي ام سي",
+    "name": "JMC",
+    "slug": "jmc"
+  },
+  {
+    "logo": null,
+    "make": "Kaiyi",
+    "make_ar": "Kaiyi",
+    "name": "Kaiyi",
+    "slug": "kaiyi"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/kia_logo.png",
+    "make": "Kia",
+    "make_ar": "كيا",
+    "name": "Kia",
+    "slug": "kia"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/king-long_logo.png",
+    "make": "King Long",
+    "make_ar": "كينج لونج",
+    "name": "King Long",
+    "slug": "king-long"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/koenigsegg_logo.png",
+    "make": "Koenigsegg",
+    "make_ar": "كونيجسج",
+    "name": "Koenigsegg",
+    "slug": "koenigsegg"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/ktm_logo.png",
+    "make": "KTM",
+    "make_ar": "كي تي أم‎",
+    "name": "KTM",
+    "slug": "ktm"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/lada_logo.png",
+    "make": "Lada",
+    "make_ar": "لادا",
+    "name": "Lada",
+    "slug": "lada"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/lamborghini_logo.png",
+    "make": "Lamborghini",
+    "make_ar": "لامبورغيني",
+    "name": "Lamborghini",
+    "slug": "lamborghini"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/lamborghini-onyx_logo.png",
+    "make": "Lamborghini Onyx",
+    "make_ar": "Lamborghini Onyx",
+    "name": "Lamborghini Onyx",
+    "slug": "lamborghini-onyx"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/lancia_logo.png",
+    "make": "Lancia",
+    "make_ar": "لانسيا",
+    "name": "Lancia",
+    "slug": "lancia"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/land-rover_logo.png",
+    "make": "Land Rover",
+    "make_ar": "لاند روفر",
+    "name": "Land Rover",
+    "slug": "land-rover"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/leapmotor_logo.png",
+    "make": "Leapmotor",
+    "make_ar": "Leapmotor",
+    "name": "Leapmotor",
+    "slug": "leapmotor"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/levc_logo.png",
+    "make": "LEVC",
+    "make_ar": "LEVC",
+    "name": "LEVC",
+    "slug": "levc"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/lexus_logo.png",
+    "make": "Lexus",
+    "make_ar": "لكزس",
+    "name": "Lexus",
+    "slug": "lexus"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/lincoln_logo.png",
+    "make": "Lincoln",
+    "make_ar": "لينكولن",
+    "name": "Lincoln",
+    "slug": "lincoln"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/livan_logo.png",
+    "make": "Livan",
+    "make_ar": "Livan",
+    "name": "Livan",
+    "slug": "livan"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/lixiang_logo.png",
+    "make": "Lixiang",
+    "make_ar": "Lixiang",
+    "name": "Lixiang",
+    "slug": "lixiang"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/lotus_logo.png",
+    "make": "Lotus",
+    "make_ar": "اللوتس",
+    "name": "Lotus",
+    "slug": "lotus"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/lucid_logo.png",
+    "make": "Lucid",
+    "make_ar": "Lucid",
+    "name": "Lucid",
+    "slug": "lucid"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/luxgen_logo.png",
+    "make": "Luxgen",
+    "make_ar": "لكسجين",
+    "name": "Luxgen",
+    "slug": "luxgen"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/mahindra_logo.png",
+    "make": "Mahindra",
+    "make_ar": "ماهيندرا",
+    "name": "Mahindra",
+    "slug": "mahindra"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/maserati_logo.png",
+    "make": "Maserati",
+    "make_ar": "مازيراتي",
+    "name": "Maserati",
+    "slug": "maserati"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/maxus_logo.png",
+    "make": "Maxus",
+    "make_ar": "مكسس",
+    "name": "Maxus",
+    "slug": "maxus"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/maybach_logo.png",
+    "make": "Maybach",
+    "make_ar": "مايباخ",
+    "name": "Maybach",
+    "slug": "maybach"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/mazda_logo.png",
+    "make": "Mazda",
+    "make_ar": "مازدا",
+    "name": "Mazda",
+    "slug": "mazda"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/mclaren_logo.png",
+    "make": "McLaren",
+    "make_ar": "ماكلارين",
+    "name": "McLaren",
+    "slug": "mclaren"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/mercedes-onyx_logo.png",
+    "make": "Mercedes Onyx",
+    "make_ar": "Mercedes Onyx",
+    "name": "Mercedes Onyx",
+    "slug": "mercedes-onyx"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/mercedes-maybach_logo.png",
+    "make": "Mercedes-Maybach",
+    "make_ar": "مرسيدس-مايباخ",
+    "name": "Mercedes-Maybach",
+    "slug": "mercedes-maybach"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/mercury_logo.png",
+    "make": "Mercury",
+    "make_ar": "ميركري",
+    "name": "Mercury",
+    "slug": "mercury"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/mg_logo.png",
+    "make": "MG",
+    "make_ar": "إم جي",
+    "name": "MG",
+    "slug": "mg"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/milan_logo.png",
+    "make": "Milan",
+    "make_ar": "ميلان",
+    "name": "Milan",
+    "slug": "milan"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/mitsubishi_logo.png",
+    "make": "Mitsubishi",
+    "make_ar": "ميتسوبيشي",
+    "name": "Mitsubishi",
+    "slug": "mitsubishi"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/morgan_logo.png",
+    "make": "Morgan",
+    "make_ar": "مورغان",
+    "name": "Morgan",
+    "slug": "morgan"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/morris_logo.png",
+    "make": "Morris",
+    "make_ar": "موريس",
+    "name": "Morris",
+    "slug": "morris"
+  },
+  {
+    "logo": null,
+    "make": "Other Make",
+    "make_ar": "نوع أخر",
+    "name": "Other Make",
+    "slug": "other-make"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/w-motors_logo.png",
+    "make": "W Motors",
+    "make_ar": "دبليو موتور",
+    "name": "W Motors",
+    "slug": "w-motors"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/neta_logo.png",
+    "make": "Neta",
+    "make_ar": "Neta",
+    "name": "Neta",
+    "slug": "neta"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/nio_logo.png",
+    "make": "Nio",
+    "make_ar": "Nio",
+    "name": "Nio",
+    "slug": "nio"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/nissan_logo.png",
+    "make": "Nissan",
+    "make_ar": "نيسان",
+    "name": "Nissan",
+    "slug": "nissan"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/noble_logo.png",
+    "make": "Noble",
+    "make_ar": "نوبل",
+    "name": "Noble",
+    "slug": "noble"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/oldsmobile_logo.png",
+    "make": "Oldsmobile",
+    "make_ar": "أولدزموبيل",
+    "name": "Oldsmobile",
+    "slug": "oldsmobile"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/omoda_logo.png",
+    "make": "OMODA",
+    "make_ar": "OMODA",
+    "name": "OMODA",
+    "slug": "omoda"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/opel_logo.png",
+    "make": "Opel",
+    "make_ar": "أوبل",
+    "name": "Opel",
+    "slug": "opel"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/oullim_logo.png",
+    "make": "Oullim",
+    "make_ar": "أوليوم",
+    "name": "Oullim",
+    "slug": "oullim"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/rolls-royce-onyx_logo.png",
+    "make": "Rolls-Royce Onyx",
+    "make_ar": "Rolls-Royce Onyx",
+    "name": "Rolls-Royce Onyx",
+    "slug": "rolls-royce-onyx"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/pagani_logo.png",
+    "make": "Pagani",
+    "make_ar": "باجاني",
+    "name": "Pagani",
+    "slug": "pagani"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/pal-v_logo.png",
+    "make": "PAL-V",
+    "make_ar": "PAL-V",
+    "name": "PAL-V",
+    "slug": "pal-v"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/peugeot_logo.png",
+    "make": "Peugeot",
+    "make_ar": "بيجو",
+    "name": "Peugeot",
+    "slug": "peugeot"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/pgo_logo.png",
+    "make": "PGO",
+    "make_ar": "PGO",
+    "name": "PGO",
+    "slug": "pgo"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/plymouth_logo.png",
+    "make": "Plymouth",
+    "make_ar": "Plymouth",
+    "name": "Plymouth",
+    "slug": "plymouth"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/polestar_logo.png",
+    "make": "Polestar",
+    "make_ar": "Polestar",
+    "name": "Polestar",
+    "slug": "polestar"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/pontiac_logo.png",
+    "make": "Pontiac",
+    "make_ar": "بوينتك",
+    "name": "Pontiac",
+    "slug": "pontiac"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/porsche_logo.png",
+    "make": "Porsche",
+    "make_ar": "بورشه",
+    "name": "Porsche",
+    "slug": "porsche"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/proton_logo.png",
+    "make": "Proton",
+    "make_ar": "بروتون",
+    "name": "Proton",
+    "slug": "proton"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/qiantu_logo.png",
+    "make": "Qiantu",
+    "make_ar": "Qiantu",
+    "name": "Qiantu",
+    "slug": "qiantu"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/rabdan_logo.png",
+    "make": "Rabdan",
+    "make_ar": "Rabdan",
+    "name": "Rabdan",
+    "slug": "rabdan"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/renault_logo.png",
+    "make": "Renault",
+    "make_ar": "رينو",
+    "name": "Renault",
+    "slug": "renault"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/riddara_logo.png",
+    "make": "Riddara",
+    "make_ar": "Riddara",
+    "name": "Riddara",
+    "slug": "riddara"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/rivian_logo.png",
+    "make": "Rivian",
+    "make_ar": "Rivian",
+    "name": "Rivian",
+    "slug": "rivian"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/roewe_logo.png",
+    "make": "Roewe",
+    "make_ar": "Roewe",
+    "name": "Roewe",
+    "slug": "roewe"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/rolls-royce_logo.png",
+    "make": "Rolls-Royce",
+    "make_ar": "رولز رويس",
+    "name": "Rolls-Royce",
+    "slug": "rolls-royce"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/rover_logo.png",
+    "make": "Rover",
+    "make_ar": "روفر",
+    "name": "Rover",
+    "slug": "rover"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/rox_logo.png",
+    "make": "Rox",
+    "make_ar": "Rox",
+    "name": "Rox",
+    "slug": "rox"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/saab_logo.png",
+    "make": "Saab",
+    "make_ar": "ساب",
+    "name": "Saab",
+    "slug": "saab"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/seat_logo.png",
+    "make": "Seat",
+    "make_ar": "سيات",
+    "name": "Seat",
+    "slug": "seat"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/seres_logo.png",
+    "make": "Seres",
+    "make_ar": "Seres",
+    "name": "Seres",
+    "slug": "seres"
+  },
+  {
+    "logo": null,
+    "make": "Shenlong/Sunlong",
+    "make_ar": "شنلونج/سنلونج",
+    "name": "Shenlong/Sunlong",
+    "slug": "shenlong-sunlong"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/skoda_logo.png",
+    "make": "Skoda",
+    "make_ar": "سكودا",
+    "name": "Skoda",
+    "slug": "skoda"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/skywell_logo.png",
+    "make": "Skywell",
+    "make_ar": "Skywell",
+    "name": "Skywell",
+    "slug": "skywell"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/smart_logo.png",
+    "make": "Smart",
+    "make_ar": "سمارت",
+    "name": "Smart",
+    "slug": "smart"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/soueast_logo.png",
+    "make": "Soueast",
+    "make_ar": "ساوايست",
+    "name": "Soueast",
+    "slug": "soueast"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/speranza_logo.png",
+    "make": "Speranza",
+    "make_ar": "سبيرانزا",
+    "name": "Speranza",
+    "slug": "speranza"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/spyker_logo.png",
+    "make": "Spyker",
+    "make_ar": "سبايكر",
+    "name": "Spyker",
+    "slug": "spyker"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/ssangyong_logo.png",
+    "make": "SsangYong",
+    "make_ar": "سانغيونغ",
+    "name": "SsangYong",
+    "slug": "ssangyong"
+  },
+  {
+    "logo": null,
+    "make": "Stelato",
+    "make_ar": "Stelato",
+    "name": "Stelato",
+    "slug": "stelato"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/studebaker_logo.png",
+    "make": "Studebaker",
+    "make_ar": "ستوديباكر",
+    "name": "Studebaker",
+    "slug": "studebaker"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/subaru_logo.png",
+    "make": "Subaru",
+    "make_ar": "سوبارو",
+    "name": "Subaru",
+    "slug": "subaru"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/suzuki_logo.png",
+    "make": "Suzuki",
+    "make_ar": "سوزوكي",
+    "name": "Suzuki",
+    "slug": "suzuki"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/westfield-sportscars_logo.png",
+    "make": "Westfield Sportscars",
+    "make_ar": "ويستفيلد سبورت كارز",
+    "name": "Westfield Sportscars",
+    "slug": "westfield-sportscars"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/tank_logo.png",
+    "make": "TANK",
+    "make_ar": "TANK",
+    "name": "TANK",
+    "slug": "tank"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/tata_logo.png",
+    "make": "TATA",
+    "make_ar": "تاتا",
+    "name": "TATA",
+    "slug": "tata"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/tesla_logo.png",
+    "make": "Tesla",
+    "make_ar": "تسلا",
+    "name": "Tesla",
+    "slug": "tesla"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/togg_logo.png",
+    "make": "Togg",
+    "make_ar": "Togg",
+    "name": "Togg",
+    "slug": "togg"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/tova_logo.png",
+    "make": "Tova",
+    "make_ar": "Tova",
+    "name": "Tova",
+    "slug": "tova"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/triumph_logo.png",
+    "make": "Triumph",
+    "make_ar": "Triumph",
+    "name": "Triumph",
+    "slug": "triumph"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/uaz_logo.png",
+    "make": "UAZ",
+    "make_ar": "يو اي زي",
+    "name": "UAZ",
+    "slug": "uaz"
+  },
+  {
+    "logo": null,
+    "make": "VGV",
+    "make_ar": "VGV",
+    "name": "VGV",
+    "slug": "vgv"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/victory_logo.png",
+    "make": "Victory",
+    "make_ar": "فيكتوري",
+    "name": "Victory",
+    "slug": "victory"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/volkswagen_logo.png",
+    "make": "Volkswagen",
+    "make_ar": "فولكسفاغن",
+    "name": "Volkswagen",
+    "slug": "volkswagen"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/volvo_logo.png",
+    "make": "Volvo",
+    "make_ar": "فولفو",
+    "name": "Volvo",
+    "slug": "volvo"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/voyah_logo.png",
+    "make": "Voyah",
+    "make_ar": "Voyah",
+    "name": "Voyah",
+    "slug": "voyah"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/wiesmann_logo.png",
+    "make": "Wiesmann",
+    "make_ar": "وايزمان",
+    "name": "Wiesmann",
+    "slug": "wiesmann"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/wuling_logo.png",
+    "make": "Wuling",
+    "make_ar": "Wuling",
+    "name": "Wuling",
+    "slug": "wuling"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/xev_logo.png",
+    "make": "XEV",
+    "make_ar": "XEV",
+    "name": "XEV",
+    "slug": "xev"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/xiaomi_logo.png",
+    "make": "Xiaomi",
+    "make_ar": "Xiaomi",
+    "name": "Xiaomi",
+    "slug": "xiaomi"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/xpeng_logo.png",
+    "make": "XPeng",
+    "make_ar": "XPeng",
+    "name": "XPeng",
+    "slug": "xpeng"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/yangwang_logo.png",
+    "make": "YangWang",
+    "make_ar": "YangWang",
+    "name": "YangWang",
+    "slug": "yangwang"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/zeekr_logo.png",
+    "make": "Zeekr",
+    "make_ar": "زيكر",
+    "name": "Zeekr",
+    "slug": "zeekr"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/zenvo_logo.png",
+    "make": "Zenvo",
+    "make_ar": "Zenvo",
+    "name": "Zenvo",
+    "slug": "zenvo"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/zhongxing_logo.png",
+    "make": "Zhongxing",
+    "make_ar": "Zhongxing",
+    "name": "Zhongxing",
+    "slug": "zhongxing"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/zna_logo.png",
+    "make": "ZNA",
+    "make_ar": "ZNA",
+    "name": "ZNA",
+    "slug": "zna"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/zotye_logo.png",
+    "make": "Zotye",
+    "make_ar": "زوتي",
+    "name": "Zotye",
+    "slug": "zotye"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/zhongxing_logo.png",
+    "make": "ZXAUTO",
+    "make_ar": "ZXAUTO",
+    "name": "ZXAUTO",
+    "slug": "zxauto"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/abarth_logo.png",
+    "make": "Abarth",
+    "make_ar": "أبارث",
+    "name": "Abarth",
+    "slug": "abarth"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/acura_logo.png",
+    "make": "Acura",
+    "make_ar": "اكورا",
+    "name": "Acura",
+    "slug": "acura"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/mini_logo.png",
+    "make": "MINI",
+    "make_ar": "ميني",
+    "name": "MINI",
+    "slug": "mini"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/ram_logo.png",
+    "make": "RAM",
+    "make_ar": "رام",
+    "name": "RAM",
+    "slug": "ram"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/jeep_logo.png",
+    "make": "Jeep",
+    "make_ar": "جيب",
+    "name": "Jeep",
+    "slug": "jeep"
+  },
+  {
+    "logo": "/assets/wecars/images/car_logos/toyota_logo.png",
+    "make": "Toyota",
+    "make_ar": "تويوتا",
+    "name": "Toyota",
+    "slug": "toyota"
+  }
+]

@@ -84,7 +84,7 @@ export default function SubmissionDetails() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="pt-24 min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600 dark:text-gray-300">Loading submission details...</p>
@@ -95,7 +95,7 @@ export default function SubmissionDetails() {
 
   if (!submission) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="pt-24 min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Submission Not Found</h1>
           <button
@@ -110,7 +110,7 @@ export default function SubmissionDetails() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+    <div className="pt-24 min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
@@ -121,8 +121,8 @@ export default function SubmissionDetails() {
               </h1>
               <p className="text-gray-600 dark:text-gray-400">ID: {submission.submission_id}</p>
             </div>
-            <div className="flex items-center space-x-4">
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(submission.status)}`}>
+            <div className="flex items-center gap-4">
+              <span className={`px-3 py-1 flex items-center gap-2 mx-2 rounded-full text-sm font-medium ${getStatusColor(submission.status)}`}>
                 {getStatusIcon(submission.status)} {submission.status}
               </span>
               <button
@@ -264,7 +264,7 @@ export default function SubmissionDetails() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {submission.license_front_url && (
               <div className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-lg">
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center gap-3">
                   <Icon name="file" size={32} className="text-blue-600" />
                   <span className="text-gray-900 dark:text-white">License Front</span>
                 </div>
@@ -279,7 +279,7 @@ export default function SubmissionDetails() {
 
             {submission.license_back_url && (
               <div className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-lg">
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center gap-3">
                   <Icon name="file" size={32} className="text-blue-600" />
                   <span className="text-gray-900 dark:text-white">License Back</span>
                 </div>
@@ -294,7 +294,7 @@ export default function SubmissionDetails() {
 
             {submission.license_pdf_url && (
               <div className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-lg">
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center gap-3">
                   <Icon name="file" size={32} className="text-red-600" />
                   <span className="text-gray-900 dark:text-white">License PDF</span>
                 </div>
@@ -309,7 +309,7 @@ export default function SubmissionDetails() {
 
             {submission.inspection_report && (
               <div className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-lg">
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center gap-3">
                   <Icon name="file" size={32} className="text-green-600" />
                   <span className="text-gray-900 dark:text-white">Inspection Report</span>
                 </div>
@@ -324,7 +324,7 @@ export default function SubmissionDetails() {
 
             {submission.signed_agreement && (
               <div className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-lg">
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center gap-3">
                   <Icon name="file" size={32} className="text-purple-600" />
                   <span className="text-gray-900 dark:text-white">Signed Agreement</span>
                 </div>
@@ -339,7 +339,7 @@ export default function SubmissionDetails() {
 
             {submission.payment_receipt && (
               <div className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-lg">
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center gap-3">
                   <Icon name="file" size={32} className="text-green-600" />
                   <span className="text-gray-900 dark:text-white">Payment Receipt</span>
                 </div>

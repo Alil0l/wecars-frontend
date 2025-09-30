@@ -359,7 +359,7 @@ export default function SignUp() {
             </div>
           )}
 
-          <div className="flex space-x-4">
+          <div className="flex gap-4">
             <button
               type="button"
               onClick={() => setCurrentStep(1)}

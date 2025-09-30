@@ -1,4 +1,4 @@
-import { useFrappeGetDocList, useFrappeGetDocCount } from 'frappe-react-sdk';
+import { useFrappeGetDocList } from 'frappe-react-sdk';
 import { useUserContext } from '../contexts/UserContext';
 
 export const useDashboard = () => {
@@ -13,7 +13,7 @@ export const useDashboard = () => {
   } = useFrappeGetDocList(
     'WC Car Submission',
     {
-      filters: [['customer_email', '=', currUser?.email || '']],
+      // filters: [['customer_email', '=', currUser?.email || '']],
       fields: [
         'name', 'submission_id', 'status', 'make', 'model', 'trim', 
         'manufacturing_year', 'mileage', 'auto_valuation', 'manual_valuation', 
@@ -26,44 +26,14 @@ export const useDashboard = () => {
     }
   );
 
-  // Get submission counts by status
-  const { data: draftCount } = useFrappeGetDocCount(
-    'WC Car Submission',
-    [['customer_email', '=', currUser?.email || ''], ['status', '=', 'Draft']]
-  );
-
-  const { data: pendingReviewCount } = useFrappeGetDocCount(
-    'WC Car Submission',
-    [['customer_email', '=', currUser?.email || ''], ['status', '=', 'Pending Review']]
-  );
-
-  const { data: reviewedCount } = useFrappeGetDocCount(
-    'WC Car Submission',
-    [['customer_email', '=', currUser?.email || ''], ['status', '=', 'Reviewed']]
-  );
-
-  const { data: valuedCount } = useFrappeGetDocCount(
-    'WC Car Submission',
-    [['customer_email', '=', currUser?.email || ''], ['status', 'in', ['Valued Automatically', 'Valued Manually']]]
-  );
-
-  const { data: finalOfferCount } = useFrappeGetDocCount(
-    'WC Car Submission',
-    [['customer_email', '=', currUser?.email || ''], ['status', '=', 'Final Offer Made']]
-  );
-
-  const { data: completedCount } = useFrappeGetDocCount(
-    'WC Car Submission',
-    [['customer_email', '=', currUser?.email || ''], ['status', 'in', ['Purchased (Inventory)', 'Sold']]]
-  );
-
+  // Calculate status counts from the submissions data
   const statusCounts = {
-    draft: draftCount || 0,
-    pendingReview: pendingReviewCount || 0,
-    reviewed: reviewedCount || 0,
-    valued: valuedCount || 0,
-    finalOffer: finalOfferCount || 0,
-    completed: completedCount || 0
+    draft: submissions?.filter(sub => sub.status === 'Draft').length || 0,
+    pendingReview: submissions?.filter(sub => sub.status === 'Pending Review').length || 0,
+    reviewed: submissions?.filter(sub => sub.status === 'Reviewed').length || 0,
+    valued: submissions?.filter(sub => ['Valued Automatically', 'Valued Manually'].includes(sub.status)).length || 0,
+    finalOffer: submissions?.filter(sub => sub.status === 'Final Offer Made').length || 0,
+    completed: submissions?.filter(sub => ['Purchased (Inventory)', 'Sold'].includes(sub.status)).length || 0
   };
 
   return {

@@ -108,17 +108,17 @@ export default function CarSubmission() {
       setIsLoading(true);
       
       // Load makes
-      const makesResponse = await fetch('/assets/wecars/data/makes.json');
+      const makesResponse = await fetch('@/assets/wecars/data/makes.json');
       const makesData = await makesResponse.json();
       setMakes(makesData);
       
       // Load models
-      const modelsResponse = await fetch('/assets/wecars/data/models.json');
+      const modelsResponse = await fetch('@/assets/wecars/data/models.json');
       const modelsData = await modelsResponse.json();
       setModels(modelsData);
       
       // Load trims
-      const trimsResponse = await fetch('/assets/wecars/data/trims.json');
+      const trimsResponse = await fetch('@/assets/wecars/data/trims.json');
       const trimsData = await trimsResponse.json();
       setTrims(trimsData);
       
@@ -129,33 +129,7 @@ export default function CarSubmission() {
     }
   };
 
-  // const uploadingFile = async (file) => {
-  //   // const formData = new FormData();
-  //   // formData.append('file', file);
-  //   // formData.append('is_private', true);
-  //   // formData.append('doctype', 'WC Car Submission');
-  //   // // formData.append('fieldname', type);
-  //   // fetch('/api/method/upload_file', {
-  //   //   method: 'POST',
-  //   //   body: formData,
-  //   //   headers: {
-  //   //     // 'Authorization': `token ${api_key}:${api_secret}`,
-  //   //     'X-Frappe-CSRF-Token': window.csrf_token
-  //   //   }
-  //   // });
-  //   // test post call
-  //   fetch('/api/resource/User/Administrator', {
-  //     method: 'PUT',
-  //     body: JSON.stringify({ language: 'ar' }),
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //       'X-Frappe-CSRF-Token': window.csrf_token
-  //     }
-  //   });
-  // }
   const handleFileUpload = (file, type) => {
-    // console.log('File uploaded:', file, type);
-    // uploadingFile(file);
     setUploadedFiles(prev => ({
       ...prev,
       [type]: file
@@ -359,15 +333,15 @@ export default function CarSubmission() {
         </div>
 
         <div className="space-y-4">
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center gap-3">
             <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
             <span className="text-gray-700 dark:text-gray-300">{t('analyzingDocumentImages')}</span>
           </div>
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center gap-3">
             <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
             <span className="text-gray-700 dark:text-gray-300">{t('extractingVehicleData')}</span>
           </div>
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center gap-3">
             <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
             <span className="text-gray-700 dark:text-gray-300">{t('validatingInformation')}</span>
           </div>
@@ -532,7 +506,7 @@ export default function CarSubmission() {
           </div>
         </div>
 
-        <div className="mt-8 flex justify-center space-x-4">
+        <div className="mt-8 flex justify-center gap-4">
           <button
             onClick={() => setCurrentStep(1)}
             className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
@@ -582,16 +556,18 @@ export default function CarSubmission() {
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 rounded-lg border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ">
-          <div className="flex items-center justify-between gap-12 h-16">
-            <div className="flex items-center space-x-3">
+          <div className="flex items-center flex-col-reverse py-4 md:flex-row justify-between gap-2 md:py-0 md:gap-12 md:h-16">
+            <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                 <span className="text-white font-bold text-sm">W</span>
               </div>
               <span className="font-bold text-xl text-gray-900 dark:text-white">{t('carSubmission')}</span>
             </div>
             
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600 dark:text-gray-400">{t('stepOf', { current: currentStep, total: 4 })}</span>
+            <div className="flex items-center gap-4">
+              <span className="mx-2 text-sm text-gray-600 dark:text-gray-400">
+                {t('step')} { currentStep } { t('of') } { 4 }
+                </span>
               <div className="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                 <div 
                   className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300"
