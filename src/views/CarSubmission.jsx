@@ -37,6 +37,20 @@ export default function CarSubmission() {
     back: null,
     pdf: null
   });
+  
+  // Camera and scanning state
+  const [scanningStep, setScanningStep] = useState('start'); // 'start', 'front', 'back', 'complete'
+  const [cameraPermission, setCameraPermission] = useState(null);
+  const [cameraStream, setCameraStream] = useState(null);
+  const [capturedImages, setCapturedImages] = useState({
+    front: null,
+    back: null
+  });
+  const [isProcessing, setIsProcessing] = useState(false);
+  
+  // Validation state
+  const [validationErrors, setValidationErrors] = useState({});
+  const [touchedFields, setTouchedFields] = useState({});
 
   // Use submission hook
   const {
@@ -136,6 +150,224 @@ export default function CarSubmission() {
     }));
   };
 
+  // Camera functionality
+  const requestCameraPermission = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: 'environment', // Use back camera on mobile
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        } 
+      });
+      setCameraStream(stream);
+      setCameraPermission('granted');
+      return true;
+    } catch (error) {
+      console.error('Camera permission denied:', error);
+      setCameraPermission('denied');
+      toast.error(t('cameraAccessDenied'));
+      return false;
+    }
+  };
+
+  const stopCamera = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop());
+      setCameraStream(null);
+    }
+  };
+
+  const capturePhoto = async (type) => {
+    if (!cameraStream) return;
+    
+    setIsProcessing(true);
+    try {
+      const video = document.getElementById('camera-video');
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      
+      context.drawImage(video, 0, 0);
+      
+      canvas.toBlob((blob) => {
+        const file = new File([blob], `${type}-license.jpg`, { type: 'image/jpeg' });
+        
+        setCapturedImages(prev => ({
+          ...prev,
+          [type]: URL.createObjectURL(blob)
+        }));
+        
+        setUploadedFiles(prev => ({
+          ...prev,
+          [type]: file
+        }));
+        
+        setIsProcessing(false);
+        toast.success(t('imageProcessed'));
+        
+        // Move to next step
+        if (type === 'front') {
+          setScanningStep('back');
+        } else {
+          setScanningStep('complete');
+        }
+      }, 'image/jpeg', 0.8);
+    } catch (error) {
+      console.error('Error capturing photo:', error);
+      setIsProcessing(false);
+      toast.error(t('tryAgain'));
+    }
+  };
+
+  const retakePhoto = (type) => {
+    setCapturedImages(prev => ({
+      ...prev,
+      [type]: null
+    }));
+    setUploadedFiles(prev => ({
+      ...prev,
+      [type]: null
+    }));
+    setScanningStep(type);
+  };
+
+  const startScanning = async () => {
+    const hasPermission = await requestCameraPermission();
+    if (hasPermission) {
+      setScanningStep('front');
+    }
+  };
+
+  const goToNextStep = () => {
+    if (scanningStep === 'front') {
+      setScanningStep('back');
+    } else if (scanningStep === 'back') {
+      setScanningStep('complete');
+    }
+  };
+
+  const goToPreviousStep = () => {
+    if (scanningStep === 'back') {
+      setScanningStep('front');
+    } else if (scanningStep === 'front') {
+      setScanningStep('start');
+    }
+  };
+
+  // Cleanup camera on unmount
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, []);
+
+  // Validation helper functions
+  const validateField = (name, value) => {
+    const errors = [];
+    
+    switch (name) {
+      case 'make':
+      case 'model':
+      case 'trim':
+        if (!value || value.trim() === '') {
+          errors.push(t('validation.required'));
+        }
+        break;
+        
+      case 'mileage':
+        if (!value || value.trim() === '') {
+          errors.push(t('validation.required'));
+        } else if (isNaN(value) || parseFloat(value) < 0) {
+          errors.push(t('validation.invalidMileage'));
+        } else if (parseFloat(value) > 999999) {
+          errors.push(t('validation.maxValue', { max: 999999 }));
+        }
+        break;
+        
+      case 'vin':
+        if (value && value.length > 0 && value.length !== 17) {
+          errors.push(t('validation.invalidVin'));
+        }
+        break;
+        
+      case 'manufacturing_year':
+        if (value && value.length > 0) {
+          const year = parseInt(value);
+          const currentYear = new Date().getFullYear();
+          if (isNaN(year) || year < 1900 || year > currentYear + 1) {
+            errors.push(t('validation.invalidYear'));
+          }
+        }
+        break;
+        
+      case 'owner_name':
+        if (value && value.length > 0 && value.length < 2) {
+          errors.push(t('validation.minLength', { min: 2 }));
+        }
+        break;
+        
+      default:
+        break;
+    }
+    
+    return errors;
+  };
+
+  const validateForm = () => {
+    const errors = {};
+    let isValid = true;
+    
+    // Required fields
+    const requiredFields = ['make', 'model', 'trim', 'mileage'];
+    requiredFields.forEach(field => {
+      const fieldErrors = validateField(field, formData[field]);
+      if (fieldErrors.length > 0) {
+        errors[field] = fieldErrors[0];
+        isValid = false;
+      }
+    });
+    
+    // Optional fields
+    const optionalFields = ['vin', 'manufacturing_year', 'owner_name'];
+    optionalFields.forEach(field => {
+      if (formData[field] && formData[field].trim() !== '') {
+        const fieldErrors = validateField(field, formData[field]);
+        if (fieldErrors.length > 0) {
+          errors[field] = fieldErrors[0];
+          isValid = false;
+        }
+      }
+    });
+    
+    setValidationErrors(errors);
+    return isValid;
+  };
+
+  const handleFieldChange = (name, value) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Clear error when user starts typing
+    if (validationErrors[name]) {
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+
+  const handleFieldBlur = (name) => {
+    setTouchedFields(prev => ({ ...prev, [name]: true }));
+    
+    const fieldErrors = validateField(name, formData[name]);
+    if (fieldErrors.length > 0) {
+      setValidationErrors(prev => ({ ...prev, [name]: fieldErrors[0] }));
+    }
+  };
+
   const handleMakeChange = (selectedMake) => {
     setFormData(prev => ({ ...prev, make: selectedMake, model: '', trim: '' }));
     
@@ -196,6 +428,12 @@ export default function CarSubmission() {
   };
 
   const confirmVehicleData = async () => {
+    // Validate form before submission
+    if (!validateForm()) {
+      toast.error(t('validation.required'));
+      return;
+    }
+    
     try {
       setIsLoading(true);
       
@@ -215,107 +453,324 @@ export default function CarSubmission() {
     }
   };
 
-  const renderStep1 = () => (
-    <div className="max-w-4xl mx-auto">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Icon name="file" size={32} className="text-white" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            {t('uploadVehicleDocuments')}
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400">
-            {t('uploadVehicleDocumentsDesc')}
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Front License */}
-          <div className="flex flex-col border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-blue-500 transition-colors">
-            <div className="mb-4">
-              <Icon name="upload" size={48} className="text-gray-400 mx-auto" />
+  const renderStep1 = () => {
+    // Start scanning screen
+    if (scanningStep === 'start') {
+      return (
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+            <div className="text-center mb-8">
+              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Icon name="camera" size={40} className="text-white" />
+              </div>
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                {t('startScanningLicense')}
+              </h2>
+              <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
+                {t('scanLicenseDescription')}
+              </p>
             </div>
-            <h3 className="font-medium text-gray-900 dark:text-white mb-2">{t('frontLicense')}</h3>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => handleFileUpload(e.target.files[0], 'front')}
-              className="hidden"
-              id="front-upload"
-            />
-            <label
-              htmlFor="front-upload"
-              className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              {uploadedFiles.front ? t('changeFile') : t('uploadImage')}
-            </label>
-            {uploadedFiles.front && (
-              <p className="text-sm text-gray-500 mt-2">{uploadedFiles.front.name}</p>
-            )}
-          </div>
 
-          {/* Back License */}
-          <div className="flex flex-col border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-blue-500 transition-colors">
-            <div className="mb-4">
-              <Icon name="upload" size={48} className="text-gray-400 mx-auto" />
-            </div>
-            <h3 className="font-medium text-gray-900 dark:text-white mb-2">{t('backLicense')}</h3>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => handleFileUpload(e.target.files[0], 'back')}
-              className="hidden"
-              id="back-upload"
-            />
-            <label
-              htmlFor="back-upload"
-              className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              {uploadedFiles.back ? t('changeFile') : t('uploadImage')}
-            </label>
-            {uploadedFiles.back && (
-              <p className="text-sm text-gray-500 mt-2">{uploadedFiles.back.name}</p>
-            )}
-          </div>
+            <div className="space-y-6">
+              {/* Main CTA */}
+              <button
+                onClick={startScanning}
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg"
+              >
+                <div className="flex items-center justify-center gap-3">
+                  <Icon name="camera" size={24} />
+                  {t('useCamera')}
+                </div>
+              </button>
 
-          {/* PDF License */}
-          <div className="flex flex-col border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-blue-500 transition-colors">
-            <div className="mb-4">
-              <Icon name="file" size={48} className="text-gray-400 mx-auto" />
+              {/* Fallback options */}
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-4">
+                  {t('or')} {t('uploadInstead')}
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Front License Upload */}
+                  <div className="flex flex-col border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center hover:border-blue-500 transition-colors">
+                    <div className="mb-3">
+                      <Icon name="upload" size={32} className="text-gray-400 mx-auto" />
+                    </div>
+                    <h3 className="font-medium text-gray-900 dark:text-white mb-2 text-sm">{t('frontLicense')}</h3>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileUpload(e.target.files[0], 'front')}
+                      className="hidden"
+                      id="front-upload"
+                    />
+                    <label
+                      htmlFor="front-upload"
+                      className="cursor-pointer bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm"
+                    >
+                      {t('uploadImageFile')}
+                    </label>
+                  </div>
+
+                  {/* Back License Upload */}
+                  <div className="flex flex-col border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center hover:border-blue-500 transition-colors">
+                    <div className="mb-3">
+                      <Icon name="upload" size={32} className="text-gray-400 mx-auto" />
+                    </div>
+                    <h3 className="font-medium text-gray-900 dark:text-white mb-2 text-sm">{t('backLicense')}</h3>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileUpload(e.target.files[0], 'back')}
+                      className="hidden"
+                      id="back-upload"
+                    />
+                    <label
+                      htmlFor="back-upload"
+                      className="cursor-pointer bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm"
+                    >
+                      {t('uploadImageFile')}
+                    </label>
+                  </div>
+                </div>
+
+                {/* PDF Upload */}
+                <div className="mt-4">
+                  <div className="flex flex-col border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center hover:border-blue-500 transition-colors">
+                    <div className="mb-3">
+                      <Icon name="file" size={32} className="text-gray-400 mx-auto" />
+                    </div>
+                    <h3 className="font-medium text-gray-900 dark:text-white mb-2 text-sm">{t('pdfLicense')}</h3>
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      onChange={(e) => handleFileUpload(e.target.files[0], 'pdf')}
+                      className="hidden"
+                      id="pdf-upload"
+                    />
+                    <label
+                      htmlFor="pdf-upload"
+                      className="cursor-pointer bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm"
+                    >
+                      {t('uploadPdfFile')}
+                    </label>
+                  </div>
+                </div>
+              </div>
             </div>
-            <h3 className="font-medium text-gray-900 dark:text-white mb-2">{t('pdfLicense')}</h3>
-            <input
-              type="file"
-              accept=".pdf"
-              onChange={(e) => handleFileUpload(e.target.files[0], 'pdf')}
-              className="hidden"
-              id="pdf-upload"
-            />
-            <label
-              htmlFor="pdf-upload"
-              className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              {uploadedFiles.pdf ? t('changeFile') : t('uploadPdf')}
-            </label>
-            {uploadedFiles.pdf && (
-              <p className="text-sm text-gray-500 mt-2">{uploadedFiles.pdf.name}</p>
-            )}
+
+            {/* Submit button */}
+            <div className="mt-8 text-center">
+              <button
+                onClick={submitDocuments}
+                disabled={!uploadedFiles.front && !uploadedFiles.back && !uploadedFiles.pdf}
+                className="bg-gradient-to-r from-green-500 to-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:from-green-600 hover:to-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {t('submitDocuments')}
+              </button>
+            </div>
           </div>
         </div>
+      );
+    }
 
-        <div className="mt-8 text-center">
-          <button
-            onClick={submitDocuments}
-            disabled={!uploadedFiles.front && !uploadedFiles.back && !uploadedFiles.pdf}
-            className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {t('submitDocuments')}
-          </button>
+    // Camera scanning screens
+    if (scanningStep === 'front' || scanningStep === 'back') {
+      const isFront = scanningStep === 'front';
+      const capturedImage = capturedImages[isFront ? 'front' : 'back'];
+      
+      return (
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold">
+                    {isFront ? t('scanFrontLicense') : t('scanBackLicense')}
+                  </h2>
+                  <p className="text-blue-100 text-sm mt-1">
+                    {t('positionDocument')}
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    stopCamera();
+                    setScanningStep('start');
+                  }}
+                  className="text-white hover:text-gray-200 transition-colors"
+                >
+                  <Icon name="close" size={24} />
+                </button>
+              </div>
+            </div>
+
+            {/* Camera or captured image */}
+            <div className="relative">
+              {capturedImage ? (
+                <div className="relative">
+                  <img
+                    src={capturedImage}
+                    alt={isFront ? t('frontLicense') : t('backLicense')}
+                    className="w-full h-64 object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                    <div className="text-center text-white">
+                      <Icon name="check" size={48} className="mx-auto mb-2" />
+                      <p className="font-semibold">
+                        {isFront ? t('frontLicenseCaptured') : t('backLicenseCaptured')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="relative">
+                  <video
+                    id="camera-video"
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-64 object-cover"
+                    ref={(video) => {
+                      if (video && cameraStream) {
+                        video.srcObject = cameraStream;
+                      }
+                    }}
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="border-2 border-white border-dashed rounded-lg w-48 h-32 flex items-center justify-center">
+                      <p className="text-white text-sm text-center px-4">
+                        {t('makeSureDocument')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Controls */}
+            <div className="p-6">
+              {capturedImage ? (
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => retakePhoto(isFront ? 'front' : 'back')}
+                    className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-3 px-4 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    {t('retakePhoto')}
+                  </button>
+                  <button
+                    onClick={goToNextStep}
+                    className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-4 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200"
+                  >
+                    {t('nextStep')}
+                  </button>
+                </div>
+              ) : (
+                <div className="text-center">
+                  <button
+                    onClick={() => capturePhoto(isFront ? 'front' : 'back')}
+                    disabled={isProcessing}
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-4 px-8 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isProcessing ? (
+                      <div className="flex items-center gap-2">
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                        {t('processingImage')}
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Icon name="camera" size={20} />
+                        {t('capturePhoto')}
+                      </div>
+                    )}
+                  </button>
+                </div>
+              )}
+
+              {/* Fallback upload for current step */}
+              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-3">
+                  {t('or')} {t('uploadInstead')}
+                </p>
+                <div className="flex gap-3">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleFileUpload(e.target.files[0], isFront ? 'front' : 'back')}
+                    className="hidden"
+                    id={`${isFront ? 'front' : 'back'}-upload-fallback`}
+                  />
+                  <label
+                    htmlFor={`${isFront ? 'front' : 'back'}-upload-fallback`}
+                    className="flex-1 cursor-pointer bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-center text-sm"
+                  >
+                    {t('uploadImageFile')}
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  );
+      );
+    }
+
+    // Complete scanning screen
+    if (scanningStep === 'complete') {
+      return (
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+            <div className="text-center mb-8">
+              <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Icon name="check" size={40} className="text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                {t('scanningProgress')}
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400">
+                {t('readyToSubmit')}
+              </p>
+            </div>
+
+            {/* Progress summary */}
+            <div className="space-y-4 mb-8">
+              <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <Icon name="check" size={20} className="text-green-600" />
+                  <span className="text-green-800 dark:text-green-200 font-medium">{t('frontLicenseStep')}</span>
+                </div>
+                <span className="text-green-600 text-sm font-medium">{t('stepCompleted')}</span>
+              </div>
+              
+              <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <Icon name="check" size={20} className="text-green-600" />
+                  <span className="text-green-800 dark:text-green-200 font-medium">{t('backLicenseStep')}</span>
+                </div>
+                <span className="text-green-600 text-sm font-medium">{t('stepCompleted')}</span>
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex gap-4">
+              <button
+                onClick={() => setScanningStep('start')}
+                className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-3 px-4 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              >
+                {t('previousStep')}
+              </button>
+              <button
+                onClick={submitDocuments}
+                className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-4 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200"
+              >
+                {t('submitDocuments')}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return null;
+  };
 
   const renderStep2 = () => (
     <div className="max-w-2xl mx-auto">
@@ -374,7 +829,10 @@ export default function CarSubmission() {
             <select
               value={formData.make}
               onChange={(e) => handleMakeChange(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              onBlur={() => handleFieldBlur('make')}
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
+                validationErrors.make ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+              }`}
             >
               <option value="">{t('selectMake')}</option>
               {makes.map((make) => (
@@ -383,6 +841,9 @@ export default function CarSubmission() {
                 </option>
               ))}
             </select>
+            {validationErrors.make && (
+              <p className="text-red-500 text-sm mt-1">{validationErrors.make}</p>
+            )}
           </div>
 
           {/* Model Selection */}
@@ -393,8 +854,11 @@ export default function CarSubmission() {
             <select
               value={formData.model}
               onChange={(e) => handleModelChange(e.target.value)}
+              onBlur={() => handleFieldBlur('model')}
               disabled={!formData.make}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white disabled:opacity-50"
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white disabled:opacity-50 ${
+                validationErrors.model ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+              }`}
             >
               <option value="">{t('selectModel')}</option>
               {availableModels.map((model) => (
@@ -403,6 +867,9 @@ export default function CarSubmission() {
                 </option>
               ))}
             </select>
+            {validationErrors.model && (
+              <p className="text-red-500 text-sm mt-1">{validationErrors.model}</p>
+            )}
           </div>
 
           {/* Trim Selection */}
@@ -413,8 +880,11 @@ export default function CarSubmission() {
             <select
               value={formData.trim}
               onChange={(e) => handleTrimChange(e.target.value)}
+              onBlur={() => handleFieldBlur('trim')}
               disabled={!formData.model}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white disabled:opacity-50"
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white disabled:opacity-50 ${
+                validationErrors.trim ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+              }`}
             >
               <option value="">{t('selectTrim')}</option>
               {availableTrims.map((trim) => (
@@ -423,6 +893,9 @@ export default function CarSubmission() {
                 </option>
               ))}
             </select>
+            {validationErrors.trim && (
+              <p className="text-red-500 text-sm mt-1">{validationErrors.trim}</p>
+            )}
           </div>
 
           {/* Mileage */}
@@ -433,10 +906,16 @@ export default function CarSubmission() {
             <input
               type="number"
               value={formData.mileage}
-              onChange={(e) => setFormData(prev => ({ ...prev, mileage: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              onChange={(e) => handleFieldChange('mileage', e.target.value)}
+              onBlur={() => handleFieldBlur('mileage')}
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
+                validationErrors.mileage ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+              }`}
               placeholder={t('enterMileage')}
             />
+            {validationErrors.mileage && (
+              <p className="text-red-500 text-sm mt-1">{validationErrors.mileage}</p>
+            )}
           </div>
 
           {/* VIN */}
@@ -447,10 +926,17 @@ export default function CarSubmission() {
             <input
               type="text"
               value={formData.vin}
-              onChange={(e) => setFormData(prev => ({ ...prev, vin: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              onChange={(e) => handleFieldChange('vin', e.target.value)}
+              onBlur={() => handleFieldBlur('vin')}
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
+                validationErrors.vin ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+              }`}
               placeholder={t('enterVin')}
+              maxLength={17}
             />
+            {validationErrors.vin && (
+              <p className="text-red-500 text-sm mt-1">{validationErrors.vin}</p>
+            )}
           </div>
 
           {/* Manufacturing Year */}
@@ -461,10 +947,18 @@ export default function CarSubmission() {
             <input
               type="number"
               value={formData.manufacturing_year}
-              onChange={(e) => setFormData(prev => ({ ...prev, manufacturing_year: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              onChange={(e) => handleFieldChange('manufacturing_year', e.target.value)}
+              onBlur={() => handleFieldBlur('manufacturing_year')}
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
+                validationErrors.manufacturing_year ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+              }`}
               placeholder={t('enterYear')}
+              min="1900"
+              max={new Date().getFullYear() + 1}
             />
+            {validationErrors.manufacturing_year && (
+              <p className="text-red-500 text-sm mt-1">{validationErrors.manufacturing_year}</p>
+            )}
           </div>
 
           {/* Transmission */}
@@ -474,7 +968,8 @@ export default function CarSubmission() {
             </label>
             <select
               value={formData.transmission}
-              onChange={(e) => setFormData(prev => ({ ...prev, transmission: e.target.value }))}
+              onChange={(e) => handleFieldChange('transmission', e.target.value)}
+              onBlur={() => handleFieldBlur('transmission')}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             >
               <option value="">{t('selectTransmission')}</option>
@@ -493,7 +988,8 @@ export default function CarSubmission() {
             </label>
             <select
               value={formData.vehicle_category}
-              onChange={(e) => setFormData(prev => ({ ...prev, vehicle_category: e.target.value }))}
+              onChange={(e) => handleFieldChange('vehicle_category', e.target.value)}
+              onBlur={() => handleFieldBlur('vehicle_category')}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             >
               <option value="">{t('selectCategory')}</option>
@@ -558,8 +1054,8 @@ export default function CarSubmission() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ">
           <div className="flex items-center flex-col-reverse py-4 md:flex-row justify-between gap-2 md:py-0 md:gap-12 md:h-16">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-sm">W</span>
+              <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+                <img src="w.svg" alt="WeCars Logo" className="w-5 h-5" />
               </div>
               <span className="font-bold text-xl text-gray-900 dark:text-white">{t('carSubmission')}</span>
             </div>

@@ -1,28 +1,31 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useUserContext } from '../contexts/UserContext';
 import { useAppContext } from '../contexts/AppContext';
- import {useFrappePostCall} from 'frappe-react-sdk';
+import { useFrappePostCall } from 'frappe-react-sdk';
 import Icon from '../components/Icons';
 
-export default function Login() {
+export default function Auth() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { setCurrUser } = useUserContext();
+  const location = useLocation();
+  const { setCurrUser, setIsLoggdedIn } = useUserContext();
   const { setIsLoading } = useAppContext();
   const { call: sendAuthLink, loading: sendAuthLinkLoading, error: sendAuthLinkError, result: sendAuthLinkResult, reset: resetSendAuthLink } = useFrappePostCall('wecars.auth.send_auth_link');
   const { call: verifyToken, loading: verifyTokenLoading, error: verifyTokenError, result: verifyTokenResult, reset: resetVerifyToken } = useFrappePostCall('wecars.auth.verify_token');
+  
+  // Determine if this is login or signup based on route
+  const isLogin = location.pathname === '/frontend/login';
+  const isSignup = location.pathname === '/frontend/signup';
+  
   const [currentStep, setCurrentStep] = useState(1); // 1: Email, 2: Profile, 3: Verification
   const [email, setEmail] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [userData, setUserData] = useState({
     full_name: '',
     mobile_number: '',
-    emirate: '',
-    emirates_id: '',
-    preferred_language: t('english'),
-    preferred_contact_method: t('email')
+    emirate: ''
   });
   const [requiredFields, setRequiredFields] = useState([]);
   const [otpLength, setOtpLength] = useState(6);
@@ -50,21 +53,6 @@ export default function Login() {
     { value: 'Fujairah', label: t('fujairah') }
   ];
 
-  const languages = [
-    { value: 'English', label: t('english') },
-    { value: 'Arabic', label: t('arabic') },
-    { value: 'Hindi', label: t('hindi') },
-    { value: 'Urdu', label: t('urdu') },
-    { value: 'French', label: t('french') },
-    { value: 'German', label: t('german') },
-    { value: 'Spanish', label: t('spanish') }
-  ];
-
-  const contactMethods = [
-    { value: 'Email', label: t('email') },
-    { value: 'SMS', label: t('sms') },
-    { value: 'Phone', label: t('phone') }
-  ];
 
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
@@ -78,7 +66,7 @@ export default function Login() {
 
     try {
       setIsLoading(true);
-      const result = await sendAuthLink( { 
+      const result = await sendAuthLink({ 
         email: email 
       });
 
@@ -105,8 +93,15 @@ export default function Login() {
     setError('');
     setSuccess('');
 
-    // Validate required fields
-    const missingFields = requiredFields.filter(field => !userData[field]);
+    // Validate required fields - use API response for login, hardcoded for signup
+    let missingFields = [];
+    if (isLogin && requiredFields.length > 0) {
+      missingFields = requiredFields.filter(field => !userData[field]);
+    } else if (isSignup) {
+      const signupRequiredFields = ['full_name', 'mobile_number', 'emirate'];
+      missingFields = signupRequiredFields.filter(field => !userData[field]);
+    }
+
     if (missingFields.length > 0) {
       setError(`Please fill in all required fields: ${missingFields.join(', ')}`);
       return;
@@ -114,7 +109,7 @@ export default function Login() {
 
     try {
       setIsLoading(true);
-      const result = await sendAuthLink( { 
+      const result = await sendAuthLink({ 
         email: email,
         user_data: userData 
       });
@@ -146,7 +141,7 @@ export default function Login() {
 
     try {
       setIsLoading(true);
-      const result = await verifyToken( { 
+      const result = await verifyToken({ 
         token: otpCode,
         email: email 
       });
@@ -164,7 +159,6 @@ export default function Login() {
     }
   };
 
-
   const handleSuccessfulAuth = (response) => {
     const { api_key, api_secret, user } = response;
     
@@ -175,6 +169,7 @@ export default function Login() {
     
     // Update user context
     setCurrUser(user);
+    setIsLoggdedIn(true);
     
     // Navigate to dashboard
     navigate('/frontend/dashboard');
@@ -189,14 +184,20 @@ export default function Login() {
     <div className="max-w-md mx-auto">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-2xl">W</span>
+          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4">
+            <img src="w.svg" alt="WeCars Logo" className="w-10 h-10" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            {t('welcomeToWeCars') || 'Welcome to WeCars'}
+            {isLogin 
+              ? (t('welcomeToWeCars') || 'Welcome to WeCars')
+              : (t('createAccount') || 'Create Your Account')
+            }
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            {t('loginDescription') || 'Enter your email to get started with passwordless authentication'}
+            {isLogin 
+              ? (t('loginDescription') || 'Enter your email to get started with passwordless authentication')
+              : (t('signupDescription') || 'Join WeCars and start selling your car today')
+            }
           </p>
         </div>
 
@@ -238,19 +239,39 @@ export default function Login() {
             disabled={!email || !isValidEmail(email)}
             className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {t('sendAuthLink') || 'Send Authentication Link'}
+            {isLogin 
+              ? (t('sendAuthLink') || 'Send Authentication Link')
+              : (t('createAccount') || 'Create Account')
+            }
           </button>
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            {t('noAccount') || "Don't have an account?"}{' '}
-            <button
-              onClick={() => navigate('/frontend/signup')}
-              className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
-            >
-              {t('signUp') || 'Sign Up'}
-            </button>
+            {isLogin 
+              ? (
+                <>
+                  {t('noAccount') || "Don't have an account?"}{' '}
+                  <button
+                    onClick={() => navigate('/frontend/signup')}
+                    className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
+                  >
+                    {t('signUp') || 'Sign Up'}
+                  </button>
+                </>
+              )
+              : (
+                <>
+                  {t('alreadyHaveAccount') || 'Already have an account?'}{' '}
+                  <button
+                    onClick={() => navigate('/frontend/login')}
+                    className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
+                  >
+                    {t('signIn') || 'Sign In'}
+                  </button>
+                </>
+              )
+            }
           </p>
         </div>
       </div>
@@ -318,49 +339,6 @@ export default function Login() {
             </select>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {t('emiratesId') || 'Emirates ID'} *
-            </label>
-            <input
-              type="text"
-              value={userData.emirates_id}
-              onChange={(e) => setUserData(prev => ({ ...prev, emirates_id: e.target.value }))}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-              placeholder="784-1234-5678901-2"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {t('preferredLanguage') || 'Preferred Language'}
-            </label>
-            <select
-              value={userData.preferred_language}
-              onChange={(e) => setUserData(prev => ({ ...prev, preferred_language: e.target.value }))}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-            >
-              {languages.map((language) => (
-                <option key={language.value} value={language.value}>{language.label}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {t('preferredContactMethod') || 'Preferred Contact Method'}
-            </label>
-            <select
-              value={userData.preferred_contact_method}
-              onChange={(e) => setUserData(prev => ({ ...prev, preferred_contact_method: e.target.value }))}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-            >
-              {contactMethods.map((method) => (
-                <option key={method.value} value={method.value}>{method.label}</option>
-              ))}
-            </select>
-          </div>
 
           {error && (
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
@@ -413,6 +391,8 @@ export default function Login() {
             </label>
             <input
               type="text"
+              inputMode="numeric"
+              autoFocus
               value={otpCode}
               onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, otpLength))}
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-center text-2xl font-mono tracking-widest"

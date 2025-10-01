@@ -45,6 +45,25 @@ export default function SubmissionDetails() {
     return statusColors[status] || 'bg-gray-100 text-gray-800';
   };
 
+  const getStatusTranslation = (status) => {
+    const statusTranslations = {
+      'Draft': t('draft'),
+      'Pending Review': t('pendingReview'),
+      'Customer Reviewed': t('customerReviewed'),
+      'Valued Automatically': t('valuedAutomatically'),
+      'Valued Manually': t('valuedManually'),
+      'Rejected': t('rejected'),
+      'Pending Inspection': t('pendingInspection'),
+      'Inspected': t('inspected'),
+      'Final Offer Made': t('finalOfferMade'),
+      'Finalizing': t('finalizing'),
+      'Purchased (Inventory)': t('purchasedInventory'),
+      'Sold': t('sold'),
+      'Offer Declined': t('offerDeclined')
+    };
+    return statusTranslations[status] || status;
+  };
+
   const getStatusIcon = (status) => {
     const statusIcons = {
       'Draft': <Icon name="edit" size={20} className="text-gray-600" />,
@@ -87,7 +106,7 @@ export default function SubmissionDetails() {
       <div className="pt-24 min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-300">Loading submission details...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-300">{t('loadingSubmissionDetails') || 'Loading submission details...'}</p>
         </div>
       </div>
     );
@@ -97,12 +116,12 @@ export default function SubmissionDetails() {
     return (
       <div className="pt-24 min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Submission Not Found</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{t('submissionNotFound') || 'Submission Not Found'}</h1>
           <button
             onClick={() => navigate('/frontend/dashboard')}
             className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
           >
-            Back to Dashboard
+            {t('backToDashboard') || 'Back to Dashboard'}
           </button>
         </div>
       </div>
@@ -117,13 +136,13 @@ export default function SubmissionDetails() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Submission Details
+                {t('submissionDetails') || 'Submission Details'}
               </h1>
-              <p className="text-gray-600 dark:text-gray-400">ID: {submission.submission_id}</p>
+              <p className="text-gray-600 dark:text-gray-400">{t('id') || 'ID'}: {submission.submission_id}</p>
             </div>
             <div className="flex items-center gap-4">
               <span className={`px-3 py-1 flex items-center gap-2 mx-2 rounded-full text-sm font-medium ${getStatusColor(submission.status)}`}>
-                {getStatusIcon(submission.status)} {submission.status}
+                {getStatusIcon(submission.status)} {getStatusTranslation(submission.status)}
               </span>
               <button
                 onClick={() => navigate('/frontend/dashboard')}
@@ -137,30 +156,30 @@ export default function SubmissionDetails() {
 
         {/* Vehicle Information */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Vehicle Information</h2>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{t('vehicleInformation') || 'Vehicle Information'}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Make</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('make') || 'Make'}</label>
               <p className="text-gray-900 dark:text-white">{submission.make || 'N/A'}</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Model</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('model') || 'Model'}</label>
               <p className="text-gray-900 dark:text-white">{submission.model || 'N/A'}</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Trim</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('trim') || 'Trim'}</label>
               <p className="text-gray-900 dark:text-white">{submission.trim || 'N/A'}</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Year</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('year') || 'Year'}</label>
               <p className="text-gray-900 dark:text-white">{submission.manufacturing_year || 'N/A'}</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Mileage</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('mileage') || 'Mileage'}</label>
               <p className="text-gray-900 dark:text-white">{submission.mileage ? `${submission.mileage.toLocaleString()} km` : 'N/A'}</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Transmission</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('transmission') || 'Transmission'}</label>
               <p className="text-gray-900 dark:text-white">{submission.transmission || 'N/A'}</p>
             </div>
           </div>
@@ -169,15 +188,15 @@ export default function SubmissionDetails() {
         {/* Valuation Information */}
         {(submission.auto_valuation || submission.manual_valuation || submission.final_offer) && (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Valuation Information</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{t('valuationInformation') || 'Valuation Information'}</h2>
             
             {submission.auto_valuation && (
               <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-medium text-blue-900 dark:text-blue-100">Automated Valuation</h3>
+                    <h3 className="font-medium text-blue-900 dark:text-blue-100">{t('automatedValuation') || 'Automated Valuation'}</h3>
                     <p className="text-sm text-blue-700 dark:text-blue-300">
-                      AI-powered estimate based on market data
+                      {t('aiPoweredEstimate') || 'AI-powered estimate based on market data'}
                     </p>
                   </div>
                   <div className="text-right">
@@ -196,9 +215,9 @@ export default function SubmissionDetails() {
               <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-medium text-green-900 dark:text-green-100">Manual Valuation</h3>
+                    <h3 className="font-medium text-green-900 dark:text-green-100">{t('manualValuation') || 'Manual Valuation'}</h3>
                     <p className="text-sm text-green-700 dark:text-green-300">
-                      Professional assessment by our team
+                      {t('professionalAssessment') || 'Professional assessment by our team'}
                     </p>
                   </div>
                   <div className="text-right">
@@ -217,9 +236,9 @@ export default function SubmissionDetails() {
               <div className="mb-4 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-medium text-purple-900 dark:text-purple-100">Final Offer</h3>
+                    <h3 className="font-medium text-purple-900 dark:text-purple-100">{t('finalOffer') || 'Final Offer'}</h3>
                     <p className="text-sm text-purple-700 dark:text-purple-300">
-                      Our final price for your vehicle
+                      {t('finalOfferDescription') || 'Our final price for your vehicle'}
                     </p>
                   </div>
                   <div className="text-right">
@@ -260,19 +279,19 @@ export default function SubmissionDetails() {
 
         {/* Documents */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Documents</h2>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{t('documents') || 'Documents'}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {submission.license_front_url && (
               <div className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-lg">
                 <div className="flex items-center gap-3">
                   <Icon name="file" size={32} className="text-blue-600" />
-                  <span className="text-gray-900 dark:text-white">License Front</span>
+                  <span className="text-gray-900 dark:text-white">{t('frontLicense') || 'License Front'}</span>
                 </div>
                 <button
                   onClick={() => downloadDocument(submission.license_front_url, 'license-front.pdf')}
                   className="text-blue-600 hover:text-blue-700 text-sm font-medium"
                 >
-                  Download
+                  {t('download') || 'Download'}
                 </button>
               </div>
             )}
@@ -281,13 +300,13 @@ export default function SubmissionDetails() {
               <div className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-lg">
                 <div className="flex items-center gap-3">
                   <Icon name="file" size={32} className="text-blue-600" />
-                  <span className="text-gray-900 dark:text-white">License Back</span>
+                  <span className="text-gray-900 dark:text-white">{t('backLicense') || 'License Back'}</span>
                 </div>
                 <button
                   onClick={() => downloadDocument(submission.license_back_url, 'license-back.pdf')}
                   className="text-blue-600 hover:text-blue-700 text-sm font-medium"
                 >
-                  Download
+                  {t('download') || 'Download'}
                 </button>
               </div>
             )}
@@ -296,13 +315,13 @@ export default function SubmissionDetails() {
               <div className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-lg">
                 <div className="flex items-center gap-3">
                   <Icon name="file" size={32} className="text-red-600" />
-                  <span className="text-gray-900 dark:text-white">License PDF</span>
+                  <span className="text-gray-900 dark:text-white">{t('pdfLicense') || 'License PDF'}</span>
                 </div>
                 <button
                   onClick={() => downloadDocument(submission.license_pdf_url, 'license.pdf')}
                   className="text-blue-600 hover:text-blue-700 text-sm font-medium"
                 >
-                  Download
+                  {t('download') || 'Download'}
                 </button>
               </div>
             )}
@@ -311,13 +330,13 @@ export default function SubmissionDetails() {
               <div className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-lg">
                 <div className="flex items-center gap-3">
                   <Icon name="file" size={32} className="text-green-600" />
-                  <span className="text-gray-900 dark:text-white">Inspection Report</span>
+                  <span className="text-gray-900 dark:text-white">{t('inspectionReport') || 'Inspection Report'}</span>
                 </div>
                 <button
                   onClick={() => downloadDocument(submission.inspection_report, 'inspection-report.pdf')}
                   className="text-blue-600 hover:text-blue-700 text-sm font-medium"
                 >
-                  Download
+                  {t('download') || 'Download'}
                 </button>
               </div>
             )}
@@ -326,13 +345,13 @@ export default function SubmissionDetails() {
               <div className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-lg">
                 <div className="flex items-center gap-3">
                   <Icon name="file" size={32} className="text-purple-600" />
-                  <span className="text-gray-900 dark:text-white">Signed Agreement</span>
+                  <span className="text-gray-900 dark:text-white">{t('signedAgreement') || 'Signed Agreement'}</span>
                 </div>
                 <button
                   onClick={() => downloadDocument(submission.signed_agreement, 'agreement.pdf')}
                   className="text-blue-600 hover:text-blue-700 text-sm font-medium"
                 >
-                  Download
+                  {t('download') || 'Download'}
                 </button>
               </div>
             )}
@@ -341,13 +360,13 @@ export default function SubmissionDetails() {
               <div className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-lg">
                 <div className="flex items-center gap-3">
                   <Icon name="file" size={32} className="text-green-600" />
-                  <span className="text-gray-900 dark:text-white">Payment Receipt</span>
+                  <span className="text-gray-900 dark:text-white">{t('paymentReceipt') || 'Payment Receipt'}</span>
                 </div>
                 <button
                   onClick={() => downloadDocument(submission.payment_receipt, 'receipt.pdf')}
                   className="text-blue-600 hover:text-blue-700 text-sm font-medium"
                 >
-                  Download
+                  {t('download') || 'Download'}
                 </button>
               </div>
             )}

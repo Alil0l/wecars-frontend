@@ -9,8 +9,7 @@ import { LanguageProvider } from './contexts/LanguageContext'
 import 'react-toastify/dist/ReactToastify.css'
 // views
 import Landing from './views/Landing'
-import Login from './views/Login'
-import SignUp from './views/SignUp'
+import Auth from './views/Auth'
 import CarValuation from './views/CarValuation'
 import CarSubmission from './views/CarSubmission'
 import Dashboard from './views/Dashboard'
@@ -87,12 +86,12 @@ const routes = [
 	},
 	{
 		path: "login",
-		element: <Login />
+		element: <Auth />
 	},
 	{
 		path: "signup",
-		element: <SignUp />
-	},
+		element: <Auth />
+	},	
 	{
 		path: "valuation",
 		element: <CarValuation />

@@ -41,6 +41,10 @@ export default function CarValuation() {
     email: currUser?.email || '',
     phone: currUser?.mobile_number || ''
   });
+  
+  // Validation state
+  const [validationErrors, setValidationErrors] = useState({});
+  const [touchedFields, setTouchedFields] = useState({});
 
   const steps = [
     { number: 1, title: t('addVehicle'), description: t('scanRegistration') },
@@ -63,6 +67,130 @@ export default function CarValuation() {
       return () => clearTimeout(timer);
     }
   }, [countdown]);
+
+  // Validation helper functions
+  const validateField = (name, value) => {
+    const errors = [];
+    
+    switch (name) {
+      case 'vin':
+        if (value && value.length > 0 && value.length !== 17) {
+          errors.push(t('validation.invalidVin'));
+        }
+        break;
+        
+      case 'make':
+      case 'model':
+      case 'trim':
+        if (!value || value.trim() === '') {
+          errors.push(t('validation.required'));
+        }
+        break;
+        
+      case 'year':
+        if (!value || value.trim() === '') {
+          errors.push(t('validation.required'));
+        } else {
+          const year = parseInt(value);
+          const currentYear = new Date().getFullYear();
+          if (isNaN(year) || year < 1900 || year > currentYear + 1) {
+            errors.push(t('validation.invalidYear'));
+          }
+        }
+        break;
+        
+      case 'registrationDate':
+      case 'licenseExpiry':
+        if (!value || value.trim() === '') {
+          errors.push(t('validation.required'));
+        } else {
+          const date = new Date(value);
+          const today = new Date();
+          if (isNaN(date.getTime())) {
+            errors.push(t('validation.invalidDate'));
+          } else if (name === 'registrationDate' && date > today) {
+            errors.push(t('validation.futureDate'));
+          }
+        }
+        break;
+        
+      case 'ownerName':
+        if (!value || value.trim() === '') {
+          errors.push(t('validation.required'));
+        } else if (value.length < 2) {
+          errors.push(t('validation.minLength', { min: 2 }));
+        }
+        break;
+        
+      case 'email':
+        if (!value || value.trim() === '') {
+          errors.push(t('validation.required'));
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          errors.push(t('validation.invalidEmail'));
+        }
+        break;
+        
+      case 'phone':
+        if (value && value.length > 0 && !/^[\+]?[0-9\s\-\(\)]{10,}$/.test(value)) {
+          errors.push(t('validation.invalidPhone'));
+        }
+        break;
+        
+      default:
+        break;
+    }
+    
+    return errors;
+  };
+
+  const validateForm = () => {
+    const errors = {};
+    let isValid = true;
+    
+    // Required fields for step 2
+    const requiredFields = ['vin', 'make', 'model', 'trim', 'year', 'registrationDate', 'licenseExpiry', 'ownerName', 'email'];
+    requiredFields.forEach(field => {
+      const fieldErrors = validateField(field, formData[field]);
+      if (fieldErrors.length > 0) {
+        errors[field] = fieldErrors[0];
+        isValid = false;
+      }
+    });
+    
+    // Optional fields
+    if (formData.phone && formData.phone.trim() !== '') {
+      const phoneErrors = validateField('phone', formData.phone);
+      if (phoneErrors.length > 0) {
+        errors.phone = phoneErrors[0];
+        isValid = false;
+      }
+    }
+    
+    setValidationErrors(errors);
+    return isValid;
+  };
+
+  const handleFieldChange = (name, value) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Clear error when user starts typing
+    if (validationErrors[name]) {
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+
+  const handleFieldBlur = (name) => {
+    setTouchedFields(prev => ({ ...prev, [name]: true }));
+    
+    const fieldErrors = validateField(name, formData[name]);
+    if (fieldErrors.length > 0) {
+      setValidationErrors(prev => ({ ...prev, [name]: fieldErrors[0] }));
+    }
+  };
 
   // Camera scanning functionality
   const startCameraScan = async () => {
@@ -352,10 +480,17 @@ export default function CarValuation() {
             <input
               type="text"
               value={formData.vin}
-              onChange={(e) => setFormData({...formData, vin: e.target.value})}
+              onChange={(e) => handleFieldChange('vin', e.target.value)}
+              onBlur={() => handleFieldBlur('vin')}
               placeholder={t('enterVin')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              maxLength={17}
+              className={`w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                validationErrors.vin ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+              }`}
             />
+            {validationErrors.vin && (
+              <p className="text-red-500 text-sm mt-1">{validationErrors.vin}</p>
+            )}
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('vinDescription')}</p>
           </div>
 
@@ -365,14 +500,20 @@ export default function CarValuation() {
             </label>
             <select
               value={formData.make}
-              onChange={(e) => setFormData({...formData, make: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              onChange={(e) => handleFieldChange('make', e.target.value)}
+              onBlur={() => handleFieldBlur('make')}
+              className={`w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                validationErrors.make ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+              }`}
             >
               <option value="">{t('selectMake')}</option>
               <option value="bmw">BMW</option>
               <option value="toyota">Toyota</option>
               <option value="honda">Honda</option>
             </select>
+            {validationErrors.make && (
+              <p className="text-red-500 text-sm mt-1">{validationErrors.make}</p>
+            )}
           </div>
 
           <div>
@@ -381,14 +522,20 @@ export default function CarValuation() {
             </label>
             <select
               value={formData.model}
-              onChange={(e) => setFormData({...formData, model: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              onChange={(e) => handleFieldChange('model', e.target.value)}
+              onBlur={() => handleFieldBlur('model')}
+              className={`w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                validationErrors.model ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+              }`}
             >
               <option value="">{t('selectModel')}</option>
               <option value="x3">X3</option>
               <option value="camry">Camry</option>
               <option value="civic">Civic</option>
             </select>
+            {validationErrors.model && (
+              <p className="text-red-500 text-sm mt-1">{validationErrors.model}</p>
+            )}
           </div>
 
           <div>
@@ -397,12 +544,18 @@ export default function CarValuation() {
             </label>
             <select
               value={formData.trim}
-              onChange={(e) => setFormData({...formData, trim: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              onChange={(e) => handleFieldChange('trim', e.target.value)}
+              onBlur={() => handleFieldBlur('trim')}
+              className={`w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                validationErrors.trim ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+              }`}
             >
               <option value="">{t('selectTrim')}</option>
               <option value="xdrive30i">X3 xDrive30i</option>
             </select>
+            {validationErrors.trim && (
+              <p className="text-red-500 text-sm mt-1">{validationErrors.trim}</p>
+            )}
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('trimDescription')}</p>
           </div>
 
@@ -412,13 +565,20 @@ export default function CarValuation() {
             </label>
             <select
               value={formData.year}
-              onChange={(e) => setFormData({...formData, year: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              onChange={(e) => handleFieldChange('year', e.target.value)}
+              onBlur={() => handleFieldBlur('year')}
+              className={`w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                validationErrors.year ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+              }`}
             >
+              <option value="">{t('selectYear')}</option>
               <option value="2025">2025</option>
               <option value="2024">2024</option>
               <option value="2023">2023</option>
             </select>
+            {validationErrors.year && (
+              <p className="text-red-500 text-sm mt-1">{validationErrors.year}</p>
+            )}
           </div>
 
           <div>
@@ -428,9 +588,15 @@ export default function CarValuation() {
             <input
               type="date"
               value={formData.registrationDate}
-              onChange={(e) => setFormData({...formData, registrationDate: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              onChange={(e) => handleFieldChange('registrationDate', e.target.value)}
+              onBlur={() => handleFieldBlur('registrationDate')}
+              className={`w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                validationErrors.registrationDate ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+              }`}
             />
+            {validationErrors.registrationDate && (
+              <p className="text-red-500 text-sm mt-1">{validationErrors.registrationDate}</p>
+            )}
           </div>
 
           <div>
@@ -440,9 +606,15 @@ export default function CarValuation() {
             <input
               type="date"
               value={formData.licenseExpiry}
-              onChange={(e) => setFormData({...formData, licenseExpiry: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              onChange={(e) => handleFieldChange('licenseExpiry', e.target.value)}
+              onBlur={() => handleFieldBlur('licenseExpiry')}
+              className={`w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                validationErrors.licenseExpiry ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+              }`}
             />
+            {validationErrors.licenseExpiry && (
+              <p className="text-red-500 text-sm mt-1">{validationErrors.licenseExpiry}</p>
+            )}
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('licenseExpiryDescription')}</p>
           </div>
 
@@ -453,10 +625,16 @@ export default function CarValuation() {
             <input
               type="text"
               value={formData.ownerName}
-              onChange={(e) => setFormData({...formData, ownerName: e.target.value})}
-              placeholder="Y"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              onChange={(e) => handleFieldChange('ownerName', e.target.value)}
+              onBlur={() => handleFieldBlur('ownerName')}
+              placeholder={t('enterOwnerName')}
+              className={`w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                validationErrors.ownerName ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+              }`}
             />
+            {validationErrors.ownerName && (
+              <p className="text-red-500 text-sm mt-1">{validationErrors.ownerName}</p>
+            )}
           </div>
         </div>
       </div>
@@ -468,7 +646,14 @@ export default function CarValuation() {
         </button>
         
         <button 
-          onClick={() => {setCurrentStep(3); sendVerificationCode()}}
+          onClick={() => {
+            if (validateForm()) {
+              setCurrentStep(3); 
+              sendVerificationCode();
+            } else {
+              toast.error(t('validation.required'));
+            }
+          }}
           className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200 flex items-center gap-2"
         >
           <span>{t('continue')}</span>
@@ -659,11 +844,11 @@ response will be like this:
               transition={{ duration: 0.6, delay: 0.2 }}
             >
               <motion.div 
-                className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center"
+                className="w-8 h-8 bg-white rounded-full flex items-center justify-center"
                 whileHover={{ rotate: 360, scale: 1.1 }}
                 transition={{ duration: 0.6 }}
               >
-                <span className="text-white font-bold text-sm">W</span>
+                <img src="w.svg" alt="WeCars Logo" className="w-5 h-5" />
               </motion.div>
               <span className="font-bold text-xl text-gray-900 dark:text-white">
                 Car Valuation
