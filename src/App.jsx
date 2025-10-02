@@ -77,7 +77,7 @@ export default function App() {
 
 const routes = [
 	{
-	path: "/frontend",
+	path: "/",
 	element: <NavigationGuard><Layout /></NavigationGuard>,
 	children: [
 	{

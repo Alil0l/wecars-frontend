@@ -3,17 +3,16 @@ import { useUserContext } from '../contexts/UserContext';
 
 export const useDashboard = () => {
   const { currUser } = useUserContext();
-
   // Get user's submissions
   const { 
     data: submissions, 
     error: submissionsError, 
     isValidating: submissionsLoading, 
-    mutate: refreshSubmissions 
+    // mutate: refreshSubmissions 
   } = useFrappeGetDocList(
     'WC Car Submission',
     {
-      // filters: [['customer_email', '=', currUser?.email || '']],
+      filters: [['customer_email', '=', currUser?.email || '']],
       fields: [
         'name', 'submission_id', 'status', 'make', 'model', 'trim', 
         'manufacturing_year', 'mileage', 'auto_valuation', 'manual_valuation', 
@@ -23,6 +22,19 @@ export const useDashboard = () => {
         field: 'creation',
         order: 'desc'
       }
+    },
+    "submissions",
+    {
+      // SWR Configuration Options
+      revalidateOnMount: false,
+      revalidateIfStale: false,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      refreshWhenOffline : false, 
+      refreshWhenHidden : false,
+      shouldRetryOnError: false,
+      refreshInterval : 900000,
+      dedupingInterval: 900000
     }
   );
 
@@ -40,7 +52,7 @@ export const useDashboard = () => {
     submissions: submissions || [],
     submissionsLoading,
     submissionsError,
-    refreshSubmissions,
+    // refreshSubmissions,
     statusCounts
   };
 };

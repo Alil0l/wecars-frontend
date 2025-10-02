@@ -13,14 +13,14 @@ const NavigationGuard = ({ children }) => {
     useEffect(() => {
         const checkNavigation = async () => {
             const { pathname } = location;
-            const publicRoutes = ["/frontend/", "/frontend/login", "/frontend/signup"];
+            const publicRoutes = ["/", "/login", "/signup"];
 
             // Check if current route is public
             const isPublicRoute = publicRoutes.includes(pathname);
 
             // If logged in user tries to access login/signup, redirect to dashboard
-            if ((pathname === "/frontend/login" || pathname === "/frontend/signup") && isLoggdedIn) {
-                navigate("/frontend/dashboard", { replace: true });
+            if ((pathname === "/login" || pathname === "/signup") && isLoggdedIn) {
+                navigate("/dashboard", { replace: true });
                 return;
             }
 
@@ -31,7 +31,7 @@ const NavigationGuard = ({ children }) => {
 
             // Check authentication for protected routes
             if (!isLoggdedIn) {
-                navigate("/frontend/login", { replace: true });
+                navigate("/login", { replace: true });
                 return;
             }
 

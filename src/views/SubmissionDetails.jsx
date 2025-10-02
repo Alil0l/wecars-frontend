@@ -118,7 +118,7 @@ export default function SubmissionDetails() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{t('submissionNotFound') || 'Submission Not Found'}</h1>
           <button
-            onClick={() => navigate('/frontend/dashboard')}
+            onClick={() => navigate('/dashboard')}
             className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
           >
             {t('backToDashboard') || 'Back to Dashboard'}
@@ -145,7 +145,7 @@ export default function SubmissionDetails() {
                 {getStatusIcon(submission.status)} {getStatusTranslation(submission.status)}
               </span>
               <button
-                onClick={() => navigate('/frontend/dashboard')}
+                onClick={() => navigate('/dashboard')}
                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
                 <Icon name="close" size={24} />

@@ -1,10 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useFrappePostCall, useFrappeFileUpload, useFrappeGetCall } from 'frappe-react-sdk';
 import { toast } from 'react-toastify';
+import { socket, initializeSocket, subscribeToSubmission, unsubscribeFromSubmission, disconnectSocket } from '../socket';
 
 export const useSubmission = () => {
   const [submissionId, setSubmissionId] = useState(null);
   const [extractedData, setExtractedData] = useState(null);
+  const [processingStatus, setProcessingStatus] = useState(null);
+  const [processingMessage, setProcessingMessage] = useState('');
+  const [extractionError, setExtractionError] = useState(null);
   
   // File upload hook
   const { upload: uploadFile, loading: fileUploadLoading, progress, error: fileUploadError, isCompleted: fileUploadCompleted, reset: resetFileUpload } = useFrappeFileUpload();
@@ -21,6 +25,75 @@ export const useSubmission = () => {
     { submission_id: submissionId },
     submissionId ? `submission-status-${submissionId}` : null
   );
+
+  // Initialize socket connection
+  useEffect(() => {
+    initializeSocket();
+    return () => {
+      disconnectSocket();
+    };
+  }, []);
+
+  // Realtime event handlers
+  const handleProcessingStarted = useCallback((data) => {
+    console.log('Processing started:', data);
+    setProcessingStatus('processing');
+    setProcessingMessage(data.message || 'AI extraction in progress...');
+    setExtractionError(null);
+    toast.info(data.message || 'Processing started...');
+  }, []);
+
+  const handleExtractionCompleted = useCallback((data) => {
+    console.log('Extraction completed:', data);
+    setProcessingStatus('extraction_completed');
+    setProcessingMessage(data.message || 'Data extraction completed');
+    setExtractedData(data.data);
+    setExtractionError(null);
+    toast.success('Vehicle data extracted successfully!');
+    
+    // Refresh submission status to get latest data
+    if (data.submission_id) {
+      refreshStatus();
+    }
+  }, [refreshStatus]);
+
+  const handleExtractionFailed = useCallback((data) => {
+    console.log('Extraction failed:', data);
+    setProcessingStatus('extraction_failed');
+    setProcessingMessage(data.message || 'Data extraction failed');
+    setExtractionError(data.error || 'Unknown error occurred');
+    setExtractedData(null);
+    toast.error(data.message || 'Failed to extract vehicle data');
+  }, []);
+
+  // Set up socket event listeners
+  useEffect(() => {
+    if (socket) {
+      // Listen for submission processing events
+      socket.on('submission_processing_started', handleProcessingStarted);
+      socket.on('submission_extraction_completed', handleExtractionCompleted);
+      socket.on('submission_extraction_failed', handleExtractionFailed);
+
+      // Cleanup listeners on unmount
+      return () => {
+        socket.off('submission_processing_started', handleProcessingStarted);
+        socket.off('submission_extraction_completed', handleExtractionCompleted);
+        socket.off('submission_extraction_failed', handleExtractionFailed);
+      };
+    }
+  }, [handleProcessingStarted, handleExtractionCompleted, handleExtractionFailed]);
+
+  // Subscribe to submission document when submissionId changes
+  useEffect(() => {
+    if (submissionId) {
+      subscribeToSubmission(submissionId);
+      
+      // Cleanup subscription when component unmounts or submissionId changes
+      return () => {
+        unsubscribeFromSubmission(submissionId);
+      };
+    }
+  }, [submissionId]);
 
   const createSubmissionWithDocuments = async (customerEmail, files) => {
     try {
@@ -125,9 +198,13 @@ export const useSubmission = () => {
   const resetSubmission = () => {
     setSubmissionId(null);
     setExtractedData(null);
+    setProcessingStatus(null);
+    setProcessingMessage('');
+    setExtractionError(null);
     resetFileUpload();
     resetCreate();
     resetConfirm();
+    disconnectSocket();
   };
 
   return {
@@ -136,6 +213,11 @@ export const useSubmission = () => {
     extractedData,
     setExtractedData,
     submissionStatus,
+    
+    // Realtime processing state
+    processingStatus,
+    processingMessage,
+    extractionError,
     
     // File upload
     uploadFile,

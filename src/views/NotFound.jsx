@@ -7,7 +7,7 @@ export default function NotFound() {
   const navigate = useNavigate();
 
   const handleGoHome = () => {
-    navigate('/frontend/');
+    navigate('/');
   };
 
   const handleGoBack = () => {
@@ -73,21 +73,21 @@ export default function NotFound() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center text-sm">
             <a 
-              href="/frontend/contact" 
+              href="/contact" 
               className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
             >
               {t('contactSupport') || 'Contact Support'}
             </a>
             <span className="hidden sm:inline text-gray-300 dark:text-gray-600">•</span>
             <a 
-              href="/frontend/" 
+              href="/" 
               className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
             >
               {t('browseCars') || 'Browse Cars'}
             </a>
             <span className="hidden sm:inline text-gray-300 dark:text-gray-600">•</span>
             <a 
-              href="/frontend/valuation" 
+              href="/valuation" 
               className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
             >
               {t('carValuation') || 'Car Valuation'}

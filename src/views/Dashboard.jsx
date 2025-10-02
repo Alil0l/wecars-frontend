@@ -14,46 +14,17 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { currUser } = useUserContext();
   const [searchTerm, setSearchTerm] = useState('');
+  const [showMenu, setShowMenu] = useState(null);
   
   // Use dashboard hook
   const { 
     submissions, 
     submissionsLoading: loading, 
-    submissionsError, 
-    refreshSubmissions,
-    statusCounts 
+    // submissionsError, 
+    // refreshSubmissions,
+    // statusCounts 
   } = useDashboard();
 
-  const quickActions = [
-    {
-      title: t('newCar') || 'Add New Car',
-      description: t('addNewCarDescription') || 'Submit your vehicle for valuation',
-      icon: <Icon name="car" size={32} className="text-white" />,
-      action: () => navigate('/frontend/submission'),
-      color: 'bg-blue-500'
-    },
-    {
-      title: t('valuation') || 'Get Valuation',
-      description: t('getValuationDescription') || 'Get instant car valuation',
-      icon: <Icon name="dollar" size={32} className="text-white" />,
-      action: () => navigate('/frontend/valuation'),
-      color: 'bg-green-500'
-    },
-    {
-      title: t('inspection') || 'Book Inspection',
-      description: t('bookInspectionDescription') || 'Schedule vehicle inspection',
-      icon: <Icon name="search" size={32} className="text-white" />,
-      action: () => navigate('/frontend/inspection'),
-      color: 'bg-purple-500'
-    },
-    {
-      title: t('history') || 'View History',
-      description: t('viewHistoryDescription') || 'View your submission history',
-      icon: <Icon name="file" size={32} className="text-white" />,
-      action: () => navigate('/frontend/history'),
-      color: 'bg-orange-500'
-    }
-  ];
 
   const getStatusColor = (status) => {
     const statusColors = {
@@ -104,6 +75,83 @@ export default function Dashboard() {
     return 'Pending';
   };
 
+  const getStatusInfo = (submission) => {
+    const status = submission.status;
+    
+    if (status === 'Pending Review' || status === 'Customer Reviewed') {
+      return {
+        type: 'pending',
+        title: t('pendingManualValuation') || 'Pending Manual Valuation',
+        description: `${submission.make} ${submission.model} ${submission.trim}`,
+        value: submission.auto_valuation ? `Auto Valuation: ${submission.auto_valuation.toLocaleString()} AED` : t('pendingValuation') || 'Pending Valuation',
+        showView: true
+      };
+    }
+    
+    if (status === 'Pending Inspection') {
+      return {
+        type: 'inspection',
+        title: t('pendingInspection') || 'Pending Inspection',
+        description: `${submission.make} ${submission.model} ${submission.trim}`,
+        value: submission.auto_valuation ? `Your car could be worth ${submission.auto_valuation.toLocaleString()} AED` : t('estimatedValue') || 'Estimated Value',
+        inspectionText: t('eligibleForFreeInspection') || 'You are eligible for a free car inspection',
+        showView: true,
+        showInspectionLocation: true
+      };
+    }
+    
+    if (status === 'Final Offer Made') {
+      return {
+        type: 'offer',
+        title: t('manualValuationOffer') || 'Manual Valuation Offer',
+        description: `${submission.make} ${submission.model} ${submission.trim}`,
+        value: submission.final_offer ? `We will buy your car at ${submission.final_offer.toLocaleString()} AED` : t('finalOffer') || 'Final Offer',
+        showAccept: true,
+        showReject: true,
+        showMenu: true
+      };
+    }
+    
+    // Default card for other statuses
+    return {
+      type: 'default',
+      title: status,
+      description: `${submission.make} ${submission.model} ${submission.trim}`,
+      value: getDisplayValue(submission),
+      showView: true
+    };
+  };
+
+  const getAvailableDocuments = (submission) => {
+    const documents = [];
+    
+    if (submission.inspection_report) {
+      documents.push({
+        name: t('inspectionReport') || 'Inspection Report',
+        type: 'inspection',
+        download: () => console.log('Download inspection report')
+      });
+    }
+    
+    if (submission.transfer_papers) {
+      documents.push({
+        name: t('transferPapers') || 'Transfer Papers',
+        type: 'transfer',
+        download: () => console.log('Download transfer papers')
+      });
+    }
+    
+    if (submission.invoice) {
+      documents.push({
+        name: t('invoice') || 'Invoice',
+        type: 'invoice',
+        download: () => console.log('Download invoice')
+      });
+    }
+    
+    return documents;
+  };
+
   const filteredSubmissions = submissions.filter(submission => 
     submission.make?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     submission.model?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -140,70 +188,22 @@ export default function Dashboard() {
           </motion.p>
         </motion.div>
 
-        {/* Quick Actions */}
-        <motion.div 
-          className="mb-8"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-        >
-          <motion.h2 
-            className="text-xl font-semibold text-gray-900 dark:text-white mb-6"
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.8 }}
-          >
-            {t('quickActions') || 'Quick Actions'}
-          </motion.h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {quickActions.map((action, index) => (
-              <motion.div
-                key={index}
-                onClick={action.action}
-                className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200 cursor-pointer group"
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 1 + index * 0.1 }}
-                whileHover={{ 
-                  scale: 1.05,
-                  transition: { type: "spring", stiffness: 300 }
-                }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <div className="text-center">
-                  <motion.div 
-                    className={`w-16 h-16 ${action.color} rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform`}
-                    whileHover={{ 
-                      scale: 1.2,
-                      rotate: 360,
-                      transition: { duration: 0.6 }
-                    }}
-                  >
-                    {action.icon}
-                  </motion.div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{action.title}</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{action.description}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
 
         {/* Vehicle Submissions */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 1.4 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
         >
           <motion.div 
             className="flex items-center justify-between mb-6"
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 1.6 }}
+            transition={{ duration: 0.6, delay: 0.8 }}
           >
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('yourVehicles') || 'Your Vehicles'}</h2>
             <span className="text-sm text-gray-500 dark:text-gray-400">
-              {submissions.length} {submissions.length === 1 ? 'submission' : 'submissions'}
+              {submissions.length} {submissions.length === 1 ? t('submission') : t('submissions')}
             </span>
           </motion.div>
 
@@ -212,79 +212,175 @@ export default function Dashboard() {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
               <p className="mt-4 text-gray-600 dark:text-gray-300">{t('loadingSubmissions') || 'Loading submissions...'}</p>
             </div>
-          ) : filteredSubmissions.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Icon name="file" size={48} className="text-gray-400" />
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{t('noVehiclesFound') || 'No vehicles found'}</h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                {searchTerm ? (t('tryAdjustingSearch') || 'Try adjusting your search terms') : (t('submitVehicle') || 'Submit your first vehicle for valuation')}
-              </p>
-              {!searchTerm && (
-                <button
-                  onClick={() => navigate('/frontend/submission')}
-                  className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  {t('submitVehicle') || 'Submit Vehicle'}
-                </button>
-              )}
-            </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {filteredSubmissions.map((submission, index) => (
-                <motion.div
-                  key={submission.name}
-                  onClick={() => navigate(`/frontend/submission/${submission.submission_id}`)}
-                  className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200 cursor-pointer"
-                  initial={{ opacity: 0, y: 50 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 1.8 + index * 0.1 }}
-                  whileHover={{ 
-                    scale: 1.02,
-                    transition: { type: "spring", stiffness: 300 }
-                  }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                        {submission.make} {submission.model} {submission.trim}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Show existing submissions */}
+              {filteredSubmissions.map((submission, index) => {
+                const statusInfo = getStatusInfo(submission);
+                const documents = getAvailableDocuments(submission);
+                
+                return (
+                  <motion.div
+                    key={submission.name}
+                    className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200 min-h-[200px] flex flex-col"
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 1.1 + index * 0.1 }}
+                    whileHover={{ 
+                      scale: 1.02,
+                      transition: { type: "spring", stiffness: 300 }
+                    }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    {/* Header with Status and Menu */}
+                    <div className="flex items-start justify-between mb-4">
+                      <span className={`px-3 py-1 flex items-center gap-2   rounded-full text-xs font-medium ${getStatusColor(submission.status)}`}>
+                        {getStatusIcon(submission.status)} {statusInfo.title}
+                      </span>
+                      {statusInfo.showMenu && documents.length > 0 && (
+                        <div className="relative">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowMenu(showMenu === submission.submission_id ? null : submission.submission_id);
+                            }}
+                            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
+                          >
+                            <Icon name="more-vertical" size={16} className="text-gray-600 dark:text-gray-400" />
+                          </button>
+                          
+                          {showMenu === submission.submission_id && (
+                            <div className="absolute right-0 top-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10 min-w-48">
+                              {documents.map((doc, docIndex) => (
+                                <button
+                                  key={docIndex}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    doc.download();
+                                    setShowMenu(null);
+                                  }}
+                                  className="w-full px-4 py-3 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 first:rounded-t-lg last:rounded-b-lg"
+                                >
+                                  {doc.name}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Car Brand Logo */}
+                    <div className="mb-4">
+                      <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                        <span className="text-blue-600 dark:text-blue-400 font-bold text-lg">
+                          {submission.make?.charAt(0) || 'C'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Card Content - Flexible grow */}
+                    <div className="flex-1 mb-4">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                        {statusInfo.description}
                       </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">ID: {submission.submission_id}</p>
+                      
+                      {statusInfo.value && (
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                          {statusInfo.value}
+                        </p>
+                      )}
+                      
+                      {statusInfo.inspectionText && (
+                        <p className="text-sm text-green-600 dark:text-green-400 font-medium">
+                          {statusInfo.inspectionText}
+                        </p>
+                      )}
                     </div>
-                    <span className={`px-3 py-1 flex items-center gap-2 rounded-full text-xs font-medium ${getStatusColor(submission.status)}`}>
-                      {getStatusIcon(submission.status)} {submission.status}
-                    </span>
-                  </div>
 
-                  <div className="space-y-2 mb-4">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">{t('value') || 'Value:'}</span>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
-                        {getDisplayValue(submission)}
-                      </span>
+                    {/* Action Buttons - Fixed at bottom */}
+                    <div className="flex items-center gap-2 mt-auto">
+                      {statusInfo.showView && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/submission/${submission.submission_id}`);
+                          }}
+                          className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          {t('view') || 'View'}
+                        </button>
+                      )}
+                      
+                      {statusInfo.showInspectionLocation && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Handle inspection location
+                            console.log('Get inspection location');
+                          }}
+                          className="px-4 py-2 bg-blue-800 text-white text-sm rounded-lg hover:bg-blue-900 transition-colors flex items-center gap-2"
+                        >
+                          <Icon name="map-pin" size={16} />
+                          {t('getInspectionLocation') || 'Get Inspection Location'}
+                        </button>
+                      )}
+                      
+                      {statusInfo.showAccept && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Handle accept offer
+                            console.log('Accept offer');
+                          }}
+                          className="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors"
+                        >
+                          {t('accept') || 'Accept'}
+                        </button>
+                      )}
+                      
+                      {statusInfo.showReject && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Handle reject offer
+                            console.log('Reject offer');
+                          }}
+                          className="px-4 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors"
+                        >
+                          {t('reject') || 'Reject'}
+                        </button>
+                      )}
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">{t('submitted') || 'Submitted:'}</span>
-                      <span className="text-sm text-gray-900 dark:text-white">
-                        {new Date(submission.creation).toLocaleDateString()}
-                      </span>
-                    </div>
+                  </motion.div>
+                );
+              })}
+                            {/* Always show Add New Car card */}
+                            <motion.div
+                className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-dashed border-gray-300 dark:border-gray-600 hover:border-blue-500 cursor-pointer transition-all duration-200"
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 1.0 }}
+                whileHover={{ 
+                  scale: 1.02,
+                  transition: { type: "spring", stiffness: 300 }
+                }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => navigate('/submission')}
+              >
+                <div className="flex flex-col items-center justify-center h-full min-h-[200px]">
+                  <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
+                    <Icon name="plus" size={24} className="text-gray-400" />
                   </div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 text-center">
+                    {t('valuateNewCar') || 'Valuate New Car'}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
+                    {t('addNewCarDescription') || 'Submit your vehicle for valuation'}
+                  </p>
+                </div>
+              </motion.div>
 
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
-                      {t('viewDetailsArrow') || 'View Details →'}
-                    </span>
-                    {submission.status === 'Final Offer Made' && (
-                      <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
-                        {t('actionRequired') || 'Action Required'}
-                      </span>
-                    )}
-                  </div>
-                </motion.div>
-              ))}
             </div>
           )}
         </motion.div>

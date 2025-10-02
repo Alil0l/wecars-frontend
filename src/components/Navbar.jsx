@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useUserContext } from '../contexts/UserContext';
 import { useDashboard } from '../hooks/useDashboard';
 import Icon from './Icons';
-
+import Logo from '../assets/w.svg';
 // Custom hook for scroll direction detection
 const useScrollDirection = () => {
   const [scrollDirection, setScrollDirection] = useState('up');
@@ -89,7 +89,7 @@ export default function Navbar() {
     if (!isLoggdedIn) {
       return {
         text: t('valueMyCar') || 'Value My Car',
-        action: () => navigate('/frontend/submission'),
+        action: () => navigate('/submission'),
         className: 'bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200'
       };
     }
@@ -100,13 +100,13 @@ export default function Navbar() {
     if (hasCars) {
       return {
         text: t('myCars') || 'My Cars',
-        action: () => navigate('/frontend/dashboard'),
+        action: () => navigate('/dashboard'),
         className: 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 rounded-md text-sm font-medium transition-colors'
       };
     } else {
       return {
         text: t('valueMyCar') || 'Value My Car',
-        action: () => navigate('/frontend/submission'),
+        action: () => navigate('/submission'),
         className: 'bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200'
       };
     }
@@ -117,11 +117,11 @@ export default function Navbar() {
 
 
   const menuItems = [
-    { name: t('home'), to: '/frontend/' },
+    { name: t('home'), to: '/' },
     ...(isLoggdedIn ? [
-      { name: t('dashboard'), to: '/frontend/dashboard' },
-      { name: t('submission'), to: '/frontend/submission' },
-      { name: t('valuation'), to: '/frontend/valuation' },
+      { name: t('dashboard'), to: '/dashboard' },
+      { name: t('submission'), to: '/submission' },
+      { name: t('valuation'), to: '/valuation' },
     ] : [])
   ];
 
@@ -142,9 +142,9 @@ export default function Navbar() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Brand */}
-          <Link to="/frontend/" className="flex items-center gap-3">
+          <Link to="/" className="flex items-center gap-3">
             <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-              <img src="w.svg" alt="WeCars Logo" className="w-5 h-5" />
+              <img src={Logo} alt="WeCars Logo" className="w-5 h-5" />
             </div>
             <span className="font-bold text-xl text-gray-900 dark:text-white">
               WeCars
@@ -263,7 +263,10 @@ export default function Navbar() {
 
         {/* Mobile Menu - Compact Popover */}
         {isMenuOpen && (
-          <div ref={menuRef} className="lg:hidden absolute top-full right-4 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50">
+          <div ref={menuRef} className={
+`max-w-[80%] lg:hidden absolute top-full mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50 ${isRTL ? 'left-4' : 'right-4'}`
+          }
+          >
             <div className="p-4">
               {/* Navigation Links */}
               { menuItems.length > 1 &&

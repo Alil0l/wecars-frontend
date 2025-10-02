@@ -5,7 +5,7 @@ import { useUserContext } from '../contexts/UserContext';
 import { useAppContext } from '../contexts/AppContext';
 import { useFrappePostCall } from 'frappe-react-sdk';
 import Icon from '../components/Icons';
-
+import Logo from '../assets/w.svg';
 export default function Auth() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -16,8 +16,8 @@ export default function Auth() {
   const { call: verifyToken, loading: verifyTokenLoading, error: verifyTokenError, result: verifyTokenResult, reset: resetVerifyToken } = useFrappePostCall('wecars.auth.verify_token');
   
   // Determine if this is login or signup based on route
-  const isLogin = location.pathname === '/frontend/login';
-  const isSignup = location.pathname === '/frontend/signup';
+  const isLogin = location.pathname === '/login';
+  const isSignup = location.pathname === '/signup';
   
   const [currentStep, setCurrentStep] = useState(1); // 1: Email, 2: Profile, 3: Verification
   const [email, setEmail] = useState('');
@@ -90,6 +90,19 @@ export default function Auth() {
 
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
+// validate the user data
+    if (!userData.full_name || !userData.mobile_number || !userData.emirate) {
+      setError('Please fill in all required fields');
+      return;
+    }
+    if(userData.mobile_number.length !== 10) {
+      setError('Please enter a valid mobile number');
+      return;
+    }
+    if(userData.emirate === '') {
+      setError('Please enter a valid emirate');
+      return;
+    }
     setError('');
     setSuccess('');
 
@@ -172,7 +185,7 @@ export default function Auth() {
     setIsLoggdedIn(true);
     
     // Navigate to dashboard
-    navigate('/frontend/dashboard');
+    navigate('/dashboard');
   };
 
   const isValidEmail = (email) => {
@@ -185,7 +198,7 @@ export default function Auth() {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4">
-            <img src="w.svg" alt="WeCars Logo" className="w-10 h-10" />
+            <img src={Logo} alt="WeCars Logo" className="w-10 h-10" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
             {isLogin 
@@ -253,7 +266,7 @@ export default function Auth() {
                 <>
                   {t('noAccount') || "Don't have an account?"}{' '}
                   <button
-                    onClick={() => navigate('/frontend/signup')}
+                    onClick={() => navigate('/signup')}
                     className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
                   >
                     {t('signUp') || 'Sign Up'}
@@ -264,7 +277,7 @@ export default function Auth() {
                 <>
                   {t('alreadyHaveAccount') || 'Already have an account?'}{' '}
                   <button
-                    onClick={() => navigate('/frontend/login')}
+                    onClick={() => navigate('/login')}
                     className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
                   >
                     {t('signIn') || 'Sign In'}

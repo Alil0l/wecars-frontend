@@ -6,7 +6,7 @@ const UserContext = createContext(null);
 
 export const UserProvider = ({ children }) => {
   const { setIsLoading } = useAppContext();
-  const [isLoggdedIn, setIsLoggdedIn] = useState(false);
+  const [isLoggdedIn, setIsLoggdedIn] = useState(true);
   const [currUser, setCurrUser] = useState(null);
   const [newNotification, setNewNotification] = useState(false);
   

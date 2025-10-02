@@ -6,6 +6,11 @@ import { useAppContext } from '../contexts/AppContext';
 import { useSubmission } from '../hooks/useSubmission';
 import { toast } from 'react-toastify';
 import Icon from '../components/Icons';
+import Logo from '../assets/w.svg';
+import MakesJson from '../assets/wecars/data/makes.json';
+import ModelsJson from '../assets/wecars/data/models.json';
+import TrimsJson from '../assets/wecars/data/trims.json';
+
 
 export default function CarSubmission() {
   const { t } = useTranslation();
@@ -34,8 +39,7 @@ export default function CarSubmission() {
   const [trims, setTrims] = useState([]);
   const [uploadedFiles, setUploadedFiles] = useState({
     front: null,
-    back: null,
-    pdf: null
+    back: null
   });
   
   // Camera and scanning state
@@ -47,6 +51,7 @@ export default function CarSubmission() {
     back: null
   });
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showUploadOptions, setShowUploadOptions] = useState(false);
   
   // Validation state
   const [validationErrors, setValidationErrors] = useState({});
@@ -58,6 +63,9 @@ export default function CarSubmission() {
     extractedData,
     setExtractedData,
     submissionStatus,
+    processingStatus,
+    processingMessage,
+    extractionError,
     createSubmissionWithDocuments,
     confirmAndUpdateVehicleData,
     checkSubmissionStatus,
@@ -94,47 +102,26 @@ export default function CarSubmission() {
     loadVehicleData();
   }, []);
 
-  // Check submission status periodically
+  // Handle realtime processing status changes
   useEffect(() => {
-    if (submissionId && currentStep === 2) {
-      const interval = setInterval(async () => {
-        const status = await checkSubmissionStatus();
-        if (status?.message) {
-          const data = status.message;
-          if (data.status === 'extraction_completed' && data.extracted_data) {
-            setExtractedData(data.extracted_data);
-            setCurrentStep(3);
-            clearInterval(interval);
-          } else if (data.status === 'extraction_failed') {
-            setCurrentStep(1);
-            toast.error(t('aiExtractionFailed'));
-            clearInterval(interval);
-          }
-        }
-      }, 3000); // Check every 3 seconds
-
-      return () => clearInterval(interval);
+    if (processingStatus === 'extraction_completed' && extractedData) {
+      setCurrentStep(3);
+    } else if (processingStatus === 'extraction_failed') {
+      // Stay on step 2 to show error, don't go back to step 1 automatically
+      // User can choose to retry or upload new documents
     }
-  }, [submissionId, currentStep, checkSubmissionStatus, t]);
+  }, [processingStatus, extractedData]);
 
   const loadVehicleData = async () => {
     try {
       setIsLoading(true);
-      
-      // Load makes
-      const makesResponse = await fetch('@/assets/wecars/data/makes.json');
-      const makesData = await makesResponse.json();
-      setMakes(makesData);
+      setMakes(MakesJson);
       
       // Load models
-      const modelsResponse = await fetch('@/assets/wecars/data/models.json');
-      const modelsData = await modelsResponse.json();
-      setModels(modelsData);
+      setModels(ModelsJson);
       
       // Load trims
-      const trimsResponse = await fetch('@/assets/wecars/data/trims.json');
-      const trimsData = await trimsResponse.json();
-      setTrims(trimsData);
+      setTrims(TrimsJson);
       
     } catch (error) {
       console.error('Error loading vehicle data:', error);
@@ -472,102 +459,107 @@ export default function CarSubmission() {
             </div>
 
             <div className="space-y-6">
-              {/* Main CTA */}
-              <button
-                onClick={startScanning}
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg"
-              >
-                <div className="flex items-center justify-center gap-3">
-                  <Icon name="camera" size={24} />
-                  {t('useCamera')}
-                </div>
-              </button>
-
-              {/* Fallback options */}
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-                <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-4">
-                  {t('or')} {t('uploadInstead')}
-                </p>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Front License Upload */}
-                  <div className="flex flex-col border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center hover:border-blue-500 transition-colors">
-                    <div className="mb-3">
-                      <Icon name="upload" size={32} className="text-gray-400 mx-auto" />
-                    </div>
-                    <h3 className="font-medium text-gray-900 dark:text-white mb-2 text-sm">{t('frontLicense')}</h3>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleFileUpload(e.target.files[0], 'front')}
-                      className="hidden"
-                      id="front-upload"
-                    />
-                    <label
-                      htmlFor="front-upload"
-                      className="cursor-pointer bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm"
-                    >
-                      {t('uploadImageFile')}
-                    </label>
+              {/* Camera option - only show on mobile */}
+              <div className="md:hidden">
+                <button
+                  onClick={startScanning}
+                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg"
+                >
+                  <div className="flex items-center justify-center gap-3">
+                    <Icon name="camera" size={24} />
+                    {t('useCamera')}
                   </div>
+                </button>
 
-                  {/* Back License Upload */}
-                  <div className="flex flex-col border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center hover:border-blue-500 transition-colors">
-                    <div className="mb-3">
-                      <Icon name="upload" size={32} className="text-gray-400 mx-auto" />
-                    </div>
-                    <h3 className="font-medium text-gray-900 dark:text-white mb-2 text-sm">{t('backLicense')}</h3>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleFileUpload(e.target.files[0], 'back')}
-                      className="hidden"
-                      id="back-upload"
-                    />
-                    <label
-                      htmlFor="back-upload"
-                      className="cursor-pointer bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm"
+                {/* Toggle to upload options on mobile */}
+                {!showUploadOptions && (
+                  <div className="text-center">
+                    <button
+                      onClick={() => setShowUploadOptions(true)}
+                      className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium text-sm"
                     >
-                      {t('uploadImageFile')}
-                    </label>
+                      {t('or')} {t('uploadInstead')}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Upload options - show on desktop or when toggled on mobile */}
+              <div className={`border-t border-gray-200 dark:border-gray-700 pt-6 ${showUploadOptions ? 'block' : 'hidden md:block'}`}>
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {t('uploadInstead')}
+                  </p>
+                  {/* Only show close button on mobile when toggled */}
+                  <div className="md:hidden">
+                    {showUploadOptions && (
+                      <button
+                        onClick={() => {setShowUploadOptions(false); setUploadedFiles({front: null, back: null})}}
+                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                      >
+                        <Icon name="close" size={20} />
+                      </button>
+                    )}
                   </div>
                 </div>
-
-                {/* PDF Upload */}
-                <div className="mt-4">
-                  <div className="flex flex-col border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center hover:border-blue-500 transition-colors">
-                    <div className="mb-3">
-                      <Icon name="file" size={32} className="text-gray-400 mx-auto" />
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Front License Upload */}
+                    <div className="flex flex-col border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center hover:border-blue-500 transition-colors">
+                      <div className="mb-3">
+                        <Icon name="upload" size={32} className="text-gray-400 mx-auto" />
+                      </div>
+                      <h3 className="font-medium text-gray-900 dark:text-white mb-2 text-sm">{t('frontLicense')}</h3>
+                      <input
+                        type="file"
+                        accept="image/*,.pdf"
+                        onChange={(e) => handleFileUpload(e.target.files[0], 'front')}
+                        className="hidden"
+                        id="front-upload"
+                      />
+                      <label
+                        htmlFor="front-upload"
+                        className="cursor-pointer bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm"
+                      >
+                        {uploadedFiles?.front?.name ? uploadedFiles?.front?.name : t('uploadImageOrPdfFile')}
+                      </label>
                     </div>
-                    <h3 className="font-medium text-gray-900 dark:text-white mb-2 text-sm">{t('pdfLicense')}</h3>
-                    <input
-                      type="file"
-                      accept=".pdf"
-                      onChange={(e) => handleFileUpload(e.target.files[0], 'pdf')}
-                      className="hidden"
-                      id="pdf-upload"
-                    />
-                    <label
-                      htmlFor="pdf-upload"
-                      className="cursor-pointer bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm"
-                    >
-                      {t('uploadPdfFile')}
-                    </label>
+
+                    {/* Back License Upload */}
+                    <div className="flex flex-col border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center hover:border-blue-500 transition-colors">
+                      <div className="mb-3">
+                        <Icon name="upload" size={32} className="text-gray-400 mx-auto" />
+                      </div>
+                      <h3 className="font-medium text-gray-900 dark:text-white mb-2 text-sm">{t('backLicense')}</h3>
+                      <input
+                        type="file"
+                        accept="image/*,.pdf"
+                        onChange={(e) => handleFileUpload(e.target.files[0], 'back')}
+                        className="hidden"
+                        id="back-upload"
+                      />
+                      <label
+                        htmlFor="back-upload"
+                        className="cursor-pointer bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm"
+                      >
+                        {uploadedFiles?.back?.name ? uploadedFiles?.back?.name : t('uploadImageOrPdfFile')}
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Submit button */}
-            <div className="mt-8 text-center">
-              <button
-                onClick={submitDocuments}
-                disabled={!uploadedFiles.front && !uploadedFiles.back && !uploadedFiles.pdf}
-                className="bg-gradient-to-r from-green-500 to-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:from-green-600 hover:to-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {t('submitDocuments')}
-              </button>
-            </div>
+            {/* Submit button - only show when files are uploaded */}
+            {(uploadedFiles.front && uploadedFiles.back && showUploadOptions) && (
+              <div className="mt-8 text-center">
+                <button
+                  onClick={submitDocuments}
+                  className="bg-gradient-to-r from-green-500 to-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:from-green-600 hover:to-blue-700 transition-all duration-200"
+                >
+                  {t('submitDocuments')}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       );
@@ -772,53 +764,199 @@ export default function CarSubmission() {
     return null;
   };
 
-  const renderStep2 = () => (
-    <div className="max-w-2xl mx-auto">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            {t('aiProcessingDocuments')}
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400">
-            {t('aiProcessingDesc')}
-          </p>
-        </div>
+  const renderStep2 = () => {
+    const getStatusIcon = () => {
+      if (processingStatus === 'extraction_failed') {
+        return <Icon name="x" size={32} className="text-red-500" />;
+      } else if (processingStatus === 'extraction_completed') {
+        return <Icon name="check" size={32} className="text-green-500" />;
+      } else {
+        return <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>;
+      }
+    };
 
-        <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-            <span className="text-gray-700 dark:text-gray-300">{t('analyzingDocumentImages')}</span>
+    const getStatusColor = () => {
+      if (processingStatus === 'extraction_failed') {
+        return 'from-red-500 to-red-600';
+      } else if (processingStatus === 'extraction_completed') {
+        return 'from-green-500 to-green-600';
+      } else {
+        return 'from-blue-500 to-purple-600';
+      }
+    };
+
+    const getStatusTitle = () => {
+      if (processingStatus === 'extraction_failed') {
+        return t('extractionFailed');
+      } else if (processingStatus === 'extraction_completed') {
+        return t('extractionCompleted');
+      } else {
+        return t('aiProcessingDocuments');
+      }
+    };
+
+    const getStatusMessage = () => {
+      if (processingMessage) {
+        return processingMessage;
+      } else if (processingStatus === 'extraction_failed') {
+        return t('extractionFailedDesc');
+      } else if (processingStatus === 'extraction_completed') {
+        return t('extractionCompletedDesc');
+      } else {
+        return t('aiProcessingDesc');
+      }
+    };
+
+    return (
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+          <div className="text-center mb-8">
+            <div className={`w-16 h-16 bg-gradient-to-br ${getStatusColor()} rounded-full flex items-center justify-center mx-auto mb-4`}>
+              {getStatusIcon()}
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              {getStatusTitle()}
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400">
+              {getStatusMessage()}
+            </p>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-            <span className="text-gray-700 dark:text-gray-300">{t('extractingVehicleData')}</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-            <span className="text-gray-700 dark:text-gray-300">{t('validatingInformation')}</span>
-          </div>
+
+          {/* Show error if extraction failed */}
+          {processingStatus === 'extraction_failed' && extractionError && (
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
+              <div className="flex items-start">
+                <Icon name="alert-circle" size={20} className="text-red-500 mt-0.5 mr-3 flex-shrink-0" />
+                <div>
+                  <h3 className="text-red-800 dark:text-red-200 font-medium mb-1">
+                    {t('extractionError')}
+                  </h3>
+                  <p className="text-red-700 dark:text-red-300 text-sm">
+                    {extractionError}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Processing steps */}
+          {processingStatus !== 'extraction_failed' && (
+            <div className="space-y-4">
+              <div className={`flex items-center gap-3 ${processingStatus === 'processing' ? 'opacity-100' : 'opacity-50'}`}>
+                <div className={`w-2 h-2 rounded-full ${processingStatus === 'processing' ? 'bg-blue-500 animate-pulse' : 'bg-gray-400'}`}></div>
+                <span className="text-gray-700 dark:text-gray-300">{t('analyzingDocumentImages')}</span>
+              </div>
+              <div className={`flex items-center gap-3 ${processingStatus === 'processing' ? 'opacity-100' : 'opacity-50'}`}>
+                <div className={`w-2 h-2 rounded-full ${processingStatus === 'processing' ? 'bg-blue-500 animate-pulse' : 'bg-gray-400'}`}></div>
+                <span className="text-gray-700 dark:text-gray-300">{t('extractingVehicleData')}</span>
+              </div>
+              <div className={`flex items-center gap-3 ${processingStatus === 'extraction_completed' ? 'opacity-100' : 'opacity-50'}`}>
+                <div className={`w-2 h-2 rounded-full ${processingStatus === 'extraction_completed' ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                <span className="text-gray-700 dark:text-gray-300">{t('validatingInformation')}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Action buttons */}
+          {processingStatus === 'extraction_failed' && (
+            <div className="mt-8 flex gap-4">
+              <button
+                onClick={() => {
+                  setCurrentStep(1);
+                  resetSubmission();
+                }}
+                className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 px-4 rounded-lg transition-colors"
+              >
+                {t('tryAgain')}
+              </button>
+              <button
+                onClick={() => setCurrentStep(1)}
+                className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded-lg transition-colors"
+              >
+                {t('uploadNewDocuments')}
+              </button>
+            </div>
+          )}
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
-  const renderStep3 = () => (
-    <div className="max-w-4xl mx-auto">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Icon name="check" size={32} className="text-white" />
+  const renderStep3 = () => {
+    // Auto-populate form with extracted data when available
+    useEffect(() => {
+      if (extractedData && Object.keys(extractedData).length > 0) {
+        setFormData(prev => ({
+          ...prev,
+          vin: extractedData.vin || prev.vin,
+          manufacturing_year: extractedData.manufacturing_year || prev.manufacturing_year,
+          specs: extractedData.specs || prev.specs,
+          vehicle_category: extractedData.vehicle_category || prev.vehicle_category,
+          owner_name: extractedData.owner_name || prev.owner_name,
+          transmission: extractedData.transmission || prev.transmission,
+          trim_id: extractedData.trim_id || prev.trim_id,
+          make: extractedData.make || prev.make,
+          model: extractedData.model || prev.model,
+          trim: extractedData.trim || prev.trim
+        }));
+      }
+    }, [extractedData]);
+
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Icon name="check" size={32} className="text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              {t('reviewExtractedData')}
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400">
+              {t('reviewExtractedDataDesc')}
+            </p>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            {t('reviewExtractedData')}
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400">
-            {t('reviewExtractedDataDesc')}
-          </p>
-        </div>
+
+          {/* Show extracted data summary if available */}
+          {extractedData && Object.keys(extractedData).length > 0 && (
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+              <div className="flex items-start">
+                <Icon name="info" size={20} className="text-blue-500 mt-0.5 mr-3 flex-shrink-0" />
+                <div>
+                  <h3 className="text-blue-800 dark:text-blue-200 font-medium mb-2">
+                    {t('aiExtractedData')}
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                    {extractedData.make && (
+                      <div className="text-blue-700 dark:text-blue-300">
+                        <span className="font-medium">{t('make')}:</span> {extractedData.make}
+                      </div>
+                    )}
+                    {extractedData.model && (
+                      <div className="text-blue-700 dark:text-blue-300">
+                        <span className="font-medium">{t('model')}:</span> {extractedData.model}
+                      </div>
+                    )}
+                    {extractedData.manufacturing_year && (
+                      <div className="text-blue-700 dark:text-blue-300">
+                        <span className="font-medium">{t('year')}:</span> {extractedData.manufacturing_year}
+                      </div>
+                    )}
+                    {extractedData.vin && (
+                      <div className="text-blue-700 dark:text-blue-300">
+                        <span className="font-medium">{t('vin')}:</span> {extractedData.vin}
+                      </div>
+                    )}
+                    {extractedData.owner_name && (
+                      <div className="text-blue-700 dark:text-blue-300">
+                        <span className="font-medium">{t('ownerName')}:</span> {extractedData.owner_name}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Make Selection */}
@@ -1019,7 +1157,8 @@ export default function CarSubmission() {
         </div>
       </div>
     </div>
-  );
+    );
+  };
 
   const renderStep4 = () => (
     <div className="max-w-2xl mx-auto">
@@ -1038,7 +1177,7 @@ export default function CarSubmission() {
           <p className="font-mono text-lg font-bold text-gray-900 dark:text-white">{submissionId}</p>
         </div>
         <button
-          onClick={() => navigate('/frontend/dashboard')}
+          onClick={() => navigate('/dashboard')}
           className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200"
         >
           {t('goToDashboard')}
@@ -1049,17 +1188,18 @@ export default function CarSubmission() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-8 pt-24 w-full flex flex-col items-center">
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg border-b border-gray-200 dark:border-gray-700">
+      {/* Header - hidden on mobile */}
+      <div className="hidden md:block bg-white dark:bg-gray-800 rounded-lg border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ">
           <div className="flex items-center flex-col-reverse py-4 md:flex-row justify-between gap-2 md:py-0 md:gap-12 md:h-16">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-                <img src="w.svg" alt="WeCars Logo" className="w-5 h-5" />
+                <img src={Logo} alt="WeCars Logo" className="w-5 h-5" />
               </div>
               <span className="font-bold text-xl text-gray-900 dark:text-white">{t('carSubmission')}</span>
             </div>
             
+            {/* Steps bar */}
             <div className="flex items-center gap-4">
               <span className="mx-2 text-sm text-gray-600 dark:text-gray-400">
                 {t('step')} { currentStep } { t('of') } { 4 }
@@ -1073,7 +1213,7 @@ export default function CarSubmission() {
             </div>
             
             <button 
-              onClick={() => navigate('/frontend/dashboard')}
+              onClick={() => navigate('/dashboard')}
               className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             >
               <Icon name="close" size={24} />

@@ -6,7 +6,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { motion } from 'framer-motion';
 import Icon from '../components/Icons';
-
+import Logo from '../assets/w.svg';
 export default function Landing() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -153,7 +153,7 @@ export default function Landing() {
               transition={{ duration: 0.8, delay: 0.6 }}
             >
               <motion.button
-                onClick={() => navigate('/frontend/submission')}
+                onClick={() => navigate('/submission')}
                 className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-4 rounded-full font-bold text-lg transition-all duration-300 flex items-center justify-center gap-2"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -162,7 +162,7 @@ export default function Landing() {
                 <span className="text-xl">→</span>
               </motion.button>
               <motion.button
-                onClick={() => navigate('/frontend/how-it-works')}
+                onClick={() => navigate('/how-it-works')}
                 className="border-2 border-gray-900 dark:border-white text-gray-900 dark:text-white hover:bg-gray-900 dark:hover:bg-white hover:text-white dark:hover:text-gray-900 px-8 py-4 rounded-full font-bold text-lg transition-all duration-300"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -483,7 +483,7 @@ export default function Landing() {
           >
             {isLoggdedIn ? (
               <motion.button
-                onClick={() => navigate('/frontend/submission')}
+                onClick={() => navigate('/submission')}
                 className="bg-yellow-500 hover:bg-yellow-600 text-black px-8 py-4 rounded-lg font-bold text-lg transition-colors"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -493,7 +493,7 @@ export default function Landing() {
             ) : (
               <>
                 <motion.button
-                  onClick={() => navigate('/frontend/signup')}
+                  onClick={() => navigate('/signup')}
                   className="bg-yellow-500 hover:bg-yellow-600 text-black px-8 py-4 rounded-lg font-bold text-lg transition-colors"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -501,7 +501,7 @@ export default function Landing() {
                   {t('getStarted') || 'Get Started Free'}
                 </motion.button>
                 <motion.button
-                  onClick={() => navigate('/frontend/login')}
+                  onClick={() => navigate('/login')}
                   className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 rounded-lg font-bold text-lg transition-colors"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -521,7 +521,7 @@ export default function Landing() {
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-                  <img src="w.svg" alt="WeCars Logo" className="w-5 h-5" />
+                  <img src={Logo} alt="WeCars Logo" className="w-5 h-5" />
                 </div>
                 <span className="font-bold text-xl">WeCars</span>
               </div>

@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import { useFrappePostCall, useFrappeFileUpload } from 'frappe-react-sdk';
 import Icon from '../components/Icons';
-
+import Logo from '../assets/w.svg';
 export default function CarValuation() {
   const { t } = useTranslation();
   const { theme } = useTheme();
@@ -56,7 +56,7 @@ export default function CarValuation() {
   // Check if user is logged in
   useEffect(() => {
     if (!isLoggdedIn) {
-      navigate('/frontend/login');
+      navigate('/login');
     }
   }, [isLoggdedIn, navigate]);
 
@@ -368,7 +368,7 @@ export default function CarValuation() {
         
         if (confirmResult.success) {
           toast.success(t('submissionSuccessful') || 'Submission successful');
-          navigate('/frontend/dashboard');
+          navigate('/dashboard');
         } else {
           toast.error(confirmResult.error);
         }
@@ -454,7 +454,7 @@ export default function CarValuation() {
 
       <div className="mt-8 flex justify-between">
         <button 
-          onClick={() => navigate('/frontend/dashboard')}
+          onClick={() => navigate('/dashboard')}
           className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
         >
           <Icon name="arrow-left" size={20} />
@@ -835,7 +835,7 @@ response will be like this:
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 hidden md:block">
           <div className="flex items-center flex-col-reverse py-4 md:flex-row justify-between gap-2 md:py-0 md:gap-12 md:h-16">
             <motion.div 
               className="flex items-center gap-3"
@@ -848,7 +848,7 @@ response will be like this:
                 whileHover={{ rotate: 360, scale: 1.1 }}
                 transition={{ duration: 0.6 }}
               >
-                <img src="w.svg" alt="WeCars Logo" className="w-5 h-5" />
+                <img src={Logo} alt="WeCars Logo" className="w-5 h-5" />
               </motion.div>
               <span className="font-bold text-xl text-gray-900 dark:text-white">
                 Car Valuation
