@@ -8,7 +8,7 @@ import {
   Camera, Clock, CheckCircle, AlertCircle, ChevronDown, ChevronRight, ChevronLeft,
   Menu, X, User, LogOut, Sun, Moon, Star, Car, DollarSign, Search, FileText,
   Home, Plus, Eye, Edit, Trash2, Download, Upload, ArrowRight, ArrowLeft,
-  Shield, Zap, Award, Users, TrendingUp, Phone, Mail, MapPin, Calendar
+  Shield, Zap, Award, Users, TrendingUp, Phone, Mail, MapPin, Calendar, Heart
 } from 'lucide-react';
 import {
   // Heroicons (outline and solid)
@@ -85,7 +85,8 @@ const iconMap = {
   'email': Email,
   'lock': Lock,
   'visibility': Visibility,
-  'visibility-off': VisibilityOff
+  'visibility-off': VisibilityOff,
+  'heart': Heart
 };
 
 const Icon = ({ 
@@ -117,7 +118,6 @@ const Icon = ({
   const IconComponent = iconMap[getRTLIconName()];
   
   if (!IconComponent) {
-    console.warn(`Icon "${name}" not found in iconMap`);
     return null;
   }
   

@@ -10,15 +10,17 @@ import Logo from '../assets/w.svg';
 import MakesJson from '../assets/wecars/data/makes.json';
 import ModelsJson from '../assets/wecars/data/models.json';
 import TrimsJson from '../assets/wecars/data/trims.json';
+import { isValidUAEMobile, formatUAEMobile, isValidEmail  } from '../utils/validation';
 
 
 export default function CarSubmission() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { currUser } = useUserContext();
+  const { currUser, isLoggdedIn } = useUserContext();
   const { setIsLoading } = useAppContext();
   
-  const [currentStep, setCurrentStep] = useState(1);
+  // Start at step 2 if user is logged in, otherwise start at step 1 (email check)
+  const [currentStep, setCurrentStep] = useState(isLoggdedIn ? 2 : 1);
   const [formData, setFormData] = useState({
     make: '',
     model: '',
@@ -41,6 +43,20 @@ export default function CarSubmission() {
     front: null,
     back: null
   });
+
+  // NEW: Updated workflow state
+  const [email, setEmail] = useState(currUser?.email || '');
+  const [userExists, setUserExists] = useState(null);
+  const [customerProfile, setCustomerProfile] = useState(null);
+  const [pendingValuation, setPendingValuation] = useState(null);
+  const [showPendingModal, setShowPendingModal] = useState(false);
+  const [carVerified, setCarVerified] = useState(false);
+  const [carRecord, setCarRecord] = useState(null);
+  const [userData, setUserData] = useState({
+    full_name: '',
+    mobile_number: '',
+    emirate: ''
+  });
   
   // Camera and scanning state
   const [scanningStep, setScanningStep] = useState('start'); // 'start', 'front', 'back', 'complete'
@@ -57,50 +73,91 @@ export default function CarSubmission() {
   const [validationErrors, setValidationErrors] = useState({});
   const [touchedFields, setTouchedFields] = useState({});
 
-  // Use submission hook
+  // Use submission hook with all API calls
   const {
+    // State
     submissionId,
+    setSubmissionId,
     extractedData,
     setExtractedData,
     submissionStatus,
     processingStatus,
     processingMessage,
     extractionError,
-    createSubmissionWithDocuments,
-    confirmAndUpdateVehicleData,
-    checkSubmissionStatus,
-    createLoading,
-    createError,
-    confirmLoading,
-    confirmError,
+    
+    // File upload
     fileUploadLoading,
     progress,
     fileUploadError,
-    resetSubmission
+    
+    // Submission operations
+    confirmAndUpdateVehicleData,
+    checkSubmissionStatus,
+    createValuationLoading,
+    createValuationError,
+    confirmLoading,
+    confirmError,
+    
+    // Authentication API calls
+    sendAuthLink,
+    sendAuthLinkLoading,
+    verifyToken,
+    verifyTokenLoading,
+    
+    // Customer API calls
+    checkCustomerHook,
+    checkPendingValuationHook,
+    resumePendingValuationHook,
+    discardPendingValuationHook,
+    confirmCustomerDataHook,
+    
+    // Vehicle API calls
+    createValuationWithDocuments,
+    getTrimsForMakeHook,
+    getListHook,
+    // Reset
+    resetSubmission,
+
+
   } = useSubmission();
 
+  // make it key and value with the key first letter uppercase
   const transmissionOptions = [
-    t('automatic'),
-    t('manual'),
-    t('cvt'),
-    t('semiAutomatic')
+    { key: 'Automatic', value: '[377] Automatic' },
+    { key: 'Manual', value: '[378] Manual' },
   ];
 
   const vehicleCategories = [
-    t('sedan'),
-    t('suv'),
-    t('hatchback'),
-    t('coupe'),
-    t('convertible'),
-    t('truck'),
-    t('van'),
-    t('other')
+    { key: 'Sedan', value: 'Sedan' },
+    { key: 'SUV', value: 'SUV'   },
+    { key: 'Hatchback', value: 'Hatchback' },
+    { key: 'Coupe', value: 'Coupe' },
+    { key: 'Convertible', value: 'Convertible' },
+    { key: 'Truck', value: 'Truck' },
+    { key: 'Van', value: 'Van' },
+    { key: 'Other', value: 'Other' },
   ];
+
+
+
 
   // Load vehicle data on component mount
   useEffect(() => {
+  async function getTrimList() {
+    const response = await getListHook(formData.make);
+    setAvailableTrims(response.message.trims);
+  }
+  getTrimList();
+
     loadVehicleData();
   }, []);
+
+  // Handle logged-in user workflow - check for pending valuations
+  useEffect(() => {
+    if (isLoggdedIn && currUser?.email && currentStep === 2) {
+      checkEmail(); // This will check for pending valuations using the logged-in user's email
+    }
+  }, [isLoggdedIn, currUser?.email, currentStep]);
 
   // Handle realtime processing status changes
   useEffect(() => {
@@ -111,6 +168,25 @@ export default function CarSubmission() {
       // User can choose to retry or upload new documents
     }
   }, [processingStatus, extractedData]);
+
+  // Auto-populate form with extracted data when available
+  useEffect(() => {
+    if (extractedData && Object.keys(extractedData).length > 0) {
+      setFormData(prev => ({
+        ...prev,
+        vin: extractedData.vin || prev.vin,
+        manufacturing_year: extractedData.manufacturing_year || prev.manufacturing_year,
+        specs: extractedData.specs || prev.specs,
+        vehicle_category: extractedData.vehicle_category || prev.vehicle_category,
+        owner_name: extractedData.owner_name || prev.owner_name,
+        transmission: extractedData.transmission || prev.transmission,
+        trim_id: extractedData.trim_id || prev.trim_id,
+        make: extractedData.make || prev.make,
+        model: extractedData.model || prev.model,
+        trim: extractedData.trim || prev.trim
+      }));
+    }
+  }, [extractedData]);
 
   const loadVehicleData = async () => {
     try {
@@ -368,10 +444,12 @@ export default function CarSubmission() {
   const handleModelChange = (selectedModel) => {
     setFormData(prev => ({ ...prev, model: selectedModel, trim: '', trim_id: '' }));
     
+
     const filteredTrims = trims.filter(trim => 
       trim.make.toLowerCase() === formData.make.toLowerCase() &&
-      trim.model.toLowerCase() === selectedModel.toLowerCase()
+      trim.model.toLowerCase().includes(selectedModel.toLowerCase())
     );
+
     setAvailableTrims(filteredTrims);
   };
 
@@ -386,6 +464,291 @@ export default function CarSubmission() {
     }));
   };
 
+  // ============================================================================
+  // NEW: Updated workflow functions
+  // ============================================================================
+  
+  // Step 1: Check email and pending valuations
+  const checkEmail = async () => {
+    // Use logged-in user's email if available, otherwise use form email
+    const emailToCheck = currUser?.email || email;
+    
+    if (!emailToCheck || !isValidEmail(emailToCheck)) {
+      if (!isLoggdedIn) {
+        toast.error('Please enter a valid email address');
+        return;
+      } else {
+        toast.error('User email not found');
+        return;
+      }
+    }
+
+    try {
+      setIsLoading(true);
+      
+      // For logged-in users, skip auth link and go directly to customer check
+      if (isLoggdedIn && currUser?.email) {
+        setUserExists(true);
+        setEmail(currUser.email);
+        // Get customer profile for pending check
+        const customerResponse = await checkCustomerHook({ email: currUser?.email });
+
+        if (customerResponse.message.exists) {
+          setCustomerProfile(customerResponse.message.customer);
+          
+          // Check for pending valuations
+          const pendingCheck = await checkPendingValuationHook({ 
+            customer_profile: customerResponse.message.customer.name 
+          });
+
+          if (pendingCheck.message && pendingCheck.message.has_pending) {
+            // Found pending valuation - show modal
+            setPendingValuation(pendingCheck.message);
+            setShowPendingModal(true);
+            
+            toast.info(`Welcome back, ${customerResponse.message.customer.full_name}! You have a pending valuation.`);
+          } else {
+            // No pending, proceed to file upload
+            setCurrentStep(2);
+            toast.success(`Welcome back, ${customerResponse.message.customer.full_name}!`);
+          }
+        }
+      } else {
+        // For non-logged-in users, request auth link
+        const response = await sendAuthLink({ email: emailToCheck.trim().toLowerCase() });
+
+        if (response.message.success) {
+          // Existing customer - check for pending valuations
+          setUserExists(true);
+          
+          // Get customer profile for pending check
+          const customerResponse = await checkCustomer({ email: emailToCheck.trim().toLowerCase() });
+
+          if (customerResponse.message.exists) {
+            setCustomerProfile(customerResponse.message.customer);
+            
+            // Check for pending valuations
+            const pendingCheck = await checkPendingValuation({ 
+              customer_profile: customerResponse.message.customer.name 
+            });
+
+            if (pendingCheck.message && pendingCheck.message.has_pending) {
+              // Found pending valuation - show modal
+              setPendingValuation(pendingCheck.message);
+              setShowPendingModal(true);
+              
+              toast.info(`Welcome back, ${customerResponse.message.customer.full_name}! You have a pending valuation.`);
+            } else {
+              // No pending, proceed to file upload
+              setCurrentStep(2);
+              toast.success(`Welcome back, ${customerResponse.message.customer.full_name}!`);
+            }
+          }
+        } else if (response.message.error === "User data required") {
+          // New customer - show user data form
+          setUserExists(false);
+          setCurrentStep(1.5); // Go to new user form
+        } else {
+          toast.error(response.message.error || 'Failed to process email');
+        }
+      }
+    } catch (err) {
+      console.error('Check email error:', err);
+      toast.error(err.message || 'Failed to check email');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Step 1.5: Create new user
+  const createNewUser = async (userData) => {
+    try {
+      setIsLoading(true);
+      
+      // Send auth link with user data for new customer
+      const response = await sendAuthLink({
+        email: email.trim().toLowerCase(),
+        user_data: userData
+      });
+
+      if (response.message.success) {
+        // Customer created, now verify token to get API credentials
+        const verifyResponse = await verifyToken({
+          token: response.message.otp, // Use the OTP as token
+          email: email.trim().toLowerCase()
+        });
+
+        if (verifyResponse.message.success) {
+          setCustomerProfile(verifyResponse.message.user);
+          setCurrentStep(2); // Go straight to file upload (new customer = no pending valuations)
+          toast.success('Customer profile created successfully!');
+        } else {
+          toast.error(verifyResponse.message.error || 'Failed to verify customer');
+        }
+      } else {
+        toast.error(response.message.error || 'Failed to create customer');
+      }
+    } catch (err) {
+      console.error('Create customer error:', err);
+      toast.error(err.message || 'Failed to create customer');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Step 2: Submit valuation
+  const submitValuation = async () => {
+    if (!uploadedFiles.front && !uploadedFiles.back) {
+      toast.error('Please upload at least one document');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      
+      // Use the useSubmission hook's createSubmissionWithDocuments method
+      const result = await createValuationWithDocuments(customerProfile.name, uploadedFiles);
+      if (result.success) {
+        setSubmissionId(result.valuation_id);
+        setCurrentStep(3);
+        toast.success('✅ Valuation submitted! AI processing...');
+      } else {
+        throw new Error(result.message || 'Submission failed');
+      }
+    } catch (err) {
+      toast.error(err.message || 'Failed to submit valuation');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Step 3: Confirm data (simplified for verified cars)
+  const handleSimplifiedDataConfirm = async (mileage, warranty) => {
+    try {
+      setIsLoading(true);
+      
+      // Prepare full form data for submission
+      const fullFormData = {
+        ...formData,
+        current_mileage: mileage,
+        warranty: warranty,
+        trim_id: formData.trim_id,
+        manufacturing_year: formData.manufacturing_year,
+        specs: formData.specs,
+        transmission: formData.transmission,
+        vin: formData.vin,
+        vehicle_category: formData.vehicle_category,
+        owner_name: formData.owner_name
+      };
+      
+      const response = await confirmCustomerDataHook({
+        valuation_id: submissionId,
+        updated_fields: fullFormData,
+        current_mileage: mileage
+      });
+
+      if (response.message && response.message.success) {
+        setCurrentStep(4);
+        toast.success('✅ Data confirmed! Valuation processing...');
+      } else {
+        throw new Error(response.message?.error || 'Confirmation failed');
+      }
+    } catch (err) {
+      toast.error(err.message || 'Failed to confirm data');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Step 3: Confirm data (full for unverified cars)
+  const confirmData = async (confirmedData) => {
+    try {
+      setIsLoading(true);
+      
+      const response = await confirmCustomerDataHook({
+        valuation_id: submissionId,
+        updated_fields: {
+          trim_id: confirmedData.trim_id,
+          manufacturing_year: confirmedData.manufacturing_year,
+          specs: confirmedData.specs,
+          transmission: confirmedData.transmission,
+          warranty: confirmedData.warranty,
+          vin: confirmedData.vin
+        },
+        current_mileage: confirmedData.current_mileage
+      });
+
+      if (response.message && response.message.success) {
+        setCurrentStep(4);
+        toast.success('✅ Data confirmed! Valuation processing...');
+      } else {
+        throw new Error(response.message?.error || 'Confirmation failed');
+      }
+    } catch (err) {
+      toast.error(err.message || 'Failed to confirm data');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Pending valuation handlers
+  const handleResumePending = async () => {
+    try {
+      setIsLoading(true);
+      setShowPendingModal(false);
+      const response = await resumePendingValuationHook({ 
+        valuation_id: pendingValuation.pending_valuation.valuation_id 
+      });
+
+      if (response.message && response.message.success) {
+        setCarRecord(response.message.car_record);
+        
+        if (response.message.car_record.data_verified) {
+          setCarVerified(true);
+          setCurrentStep(3.5); // Simplified form
+        } else {
+          setCurrentStep(3); // Full data review
+        }
+        
+        toast.success('✅ Resumed pending valuation!');
+      } else {
+        throw new Error(response.message?.error || 'Failed to resume valuation');
+      }
+    } catch (err) {
+      toast.error(err.message || 'Failed to resume valuation');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDiscardPending = async () => {
+    try {
+      setIsLoading(true);
+
+      const response = await discardPendingValuationHook({ 
+        valuation_id: pendingValuation.pending_valuation.valuation_id 
+      });
+
+      if (response.message && response.message.success) {
+        setShowPendingModal(false);
+        setPendingValuation(null);
+        setCurrentStep(2); // Go to file upload step for new submission
+        toast.success('✅ Previous valuation discarded. You can now create a new one.');
+      } else {
+        throw new Error(response.message?.error || 'Failed to discard valuation');
+      }
+    } catch (err) {
+      toast.error(err.message || 'Failed to discard valuation');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const submitDocuments = async () => {
     try {
       setIsLoading(true);
@@ -395,7 +758,7 @@ export default function CarSubmission() {
         return;
       }
 
-      const result = await createSubmissionWithDocuments(currUser?.email, uploadedFiles);
+      const result = await createValuationWithDocuments(currUser?.email, uploadedFiles);
       
       if (result.success) {
         setCurrentStep(2);
@@ -423,8 +786,8 @@ export default function CarSubmission() {
     
     try {
       setIsLoading(true);
-      
-      const result = await confirmAndUpdateVehicleData(submissionId, formData, formData.mileage);
+      const result = await 
+      confirmAndUpdateVehicleData(formData, formData.mileage);
 
       if (result.success) {
         setCurrentStep(4);
@@ -441,6 +804,138 @@ export default function CarSubmission() {
   };
 
   const renderStep1 = () => {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+          <div className="text-center mb-8">
+            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Icon name="mail" size={40} className="text-white" />
+            </div>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              {t('startValuation') || 'Start Your Valuation'}
+            </h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
+              {t('enterEmailToStart') || 'Enter your email address to begin the valuation process'}
+            </p>
+          </div>
+
+          <form onSubmit={(e) => { e.preventDefault(); checkEmail(); }} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {t('emailAddress') || 'Email Address'} *
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                placeholder="Enter your email address"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={!email || !isValidEmail(email) || setIsLoading}
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {setIsLoading ? 'Checking...' : (t('continue') || 'Continue')}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  };
+
+  const renderStep1_5 = () => {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+          <div className="text-center mb-8">
+            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Icon name="user" size={40} className="text-white" />
+            </div>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              {t('createAccount') || 'Create Your Account'}
+            </h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
+              {t('provideDetailsToContinue') || 'Please provide some details to continue'}
+            </p>
+          </div>
+
+          <form onSubmit={(e) => { e.preventDefault(); createNewUser(userData); }} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {t('fullName') || 'Full Name'} *
+              </label>
+              <input
+                type="text"
+                value={userData.full_name}
+                onChange={(e) => setUserData(prev => ({ ...prev, full_name: e.target.value }))}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                placeholder="Enter your full name"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {t('mobileNumber') || 'Mobile Number'} *
+              </label>
+              <input
+                type="tel"
+                value={userData.mobile_number}
+                onChange={(e) => setUserData(prev => ({ ...prev, mobile_number: formatUAEMobile(e.target.value) }))}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                placeholder="+971 50 123 4567"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {t('emirate') || 'Emirate'} *
+              </label>
+              <select
+                value={userData.emirate}
+                onChange={(e) => setUserData(prev => ({ ...prev, emirate: e.target.value }))}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                required
+              >
+                <option value="">Select Emirate</option>
+                <option value="Abu Dhabi">Abu Dhabi</option>
+                <option value="Dubai">Dubai</option>
+                <option value="Sharjah">Sharjah</option>
+                <option value="Ajman">Ajman</option>
+                <option value="Umm Al Quwain">Umm Al Quwain</option>
+                <option value="Ras Al Khaimah">Ras Al Khaimah</option>
+                <option value="Fujairah">Fujairah</option>
+              </select>
+            </div>
+
+            <div className="flex gap-4">
+              <button
+                type="button"
+                onClick={() => setCurrentStep(1)}
+                className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                {t('back') || 'Back'}
+              </button>
+              <button
+                type="submit"
+                disabled={setIsLoading}
+                className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200 disabled:opacity-50"
+              >
+                {setIsLoading ? 'Creating...' : (t('createAccount') || 'Create Account')}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  };
+
+  const renderStep2 = () => {
     // Start scanning screen
     if (scanningStep === 'start') {
       return (
@@ -485,75 +980,87 @@ export default function CarSubmission() {
               </div>
 
               {/* Upload options - show on desktop or when toggled on mobile */}
-              <div className={`border-t border-gray-200 dark:border-gray-700 pt-6 ${showUploadOptions ? 'block' : 'hidden md:block'}`}>
-                <div className="flex items-center justify-between mb-4">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {t('uploadInstead')}
-                  </p>
-                  {/* Only show close button on mobile when toggled */}
-                  <div className="md:hidden">
-                    {showUploadOptions && (
-                      <button
-                        onClick={() => {setShowUploadOptions(false); setUploadedFiles({front: null, back: null})}}
-                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                      >
-                        <Icon name="close" size={20} />
-                      </button>
-                    )}
+                {/* Toggle to upload options on mobile */}
+                {!showUploadOptions && (
+                  <div className="text-center hidden md:block">
+                    <button
+                      onClick={() => setShowUploadOptions(true)}
+                      className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium text-sm"
+                    >
+                      {t('or')} {t('uploadInstead')}
+                    </button>
                   </div>
-                </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Front License Upload */}
-                    <div className="flex flex-col border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center hover:border-blue-500 transition-colors">
-                      <div className="mb-3">
-                        <Icon name="upload" size={32} className="text-gray-400 mx-auto" />
-                      </div>
-                      <h3 className="font-medium text-gray-900 dark:text-white mb-2 text-sm">{t('frontLicense')}</h3>
-                      <input
-                        type="file"
-                        accept="image/*,.pdf"
-                        onChange={(e) => handleFileUpload(e.target.files[0], 'front')}
-                        className="hidden"
-                        id="front-upload"
-                      />
-                      <label
-                        htmlFor="front-upload"
-                        className="cursor-pointer bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm"
-                      >
-                        {uploadedFiles?.front?.name ? uploadedFiles?.front?.name : t('uploadImageOrPdfFile')}
-                      </label>
+                )}
+              {showUploadOptions && (
+                <div className={`border-t border-gray-200 dark:border-gray-700 pt-6 ${showUploadOptions ? 'block' : 'hidden md:block'}`}>
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {t('uploadInstead')}
+                    </p>
+                    {/* Only show close button on mobile when toggled */}
+                    <div className="md:hidden">
+                        <button
+                          onClick={() => {setShowUploadOptions(false); setUploadedFiles({front: null, back: null})}}
+                          className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                        >
+                          <Icon name="close" size={20} />
+                        </button>
                     </div>
+                  </div>
+                      
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Front License Upload */}
+                      <div className="flex flex-col border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center hover:border-blue-500 transition-colors">
+                        <div className="mb-3">
+                          <Icon name="upload" size={32} className="text-gray-400 mx-auto" />
+                        </div>
+                        <h3 className="font-medium text-gray-900 dark:text-white mb-2 text-sm">{t('frontLicense')}</h3>
+                        <input
+                          type="file"
+                          accept="image/*,.pdf"
+                          onChange={(e) => handleFileUpload(e.target.files[0], 'front')}
+                          className="hidden"
+                          id="front-upload"
+                        />
+                        <label
+                          htmlFor="front-upload"
+                          className="cursor-pointer bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm"
+                        >
+                          {uploadedFiles?.front?.name ? uploadedFiles?.front?.name : t('uploadImageOrPdfFile')}
+                        </label>
+                      </div>
 
-                    {/* Back License Upload */}
-                    <div className="flex flex-col border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center hover:border-blue-500 transition-colors">
-                      <div className="mb-3">
-                        <Icon name="upload" size={32} className="text-gray-400 mx-auto" />
+                      {/* Back License Upload */}
+                      <div className="flex flex-col border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center hover:border-blue-500 transition-colors">
+                        <div className="mb-3">
+                          <Icon name="upload" size={32} className="text-gray-400 mx-auto" />
+                        </div>
+                        <h3 className="font-medium text-gray-900 dark:text-white mb-2 text-sm">{t('backLicense')}</h3>
+                        <input
+                          type="file"
+                          accept="image/*,.pdf"
+                          onChange={(e) => handleFileUpload(e.target.files[0], 'back')}
+                          className="hidden"
+                          id="back-upload"
+                        />
+                        <label
+                          htmlFor="back-upload"
+                          className="cursor-pointer bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm"
+                        >
+                          {uploadedFiles?.back?.name ? uploadedFiles?.back?.name : t('uploadImageOrPdfFile')}
+                        </label>
                       </div>
-                      <h3 className="font-medium text-gray-900 dark:text-white mb-2 text-sm">{t('backLicense')}</h3>
-                      <input
-                        type="file"
-                        accept="image/*,.pdf"
-                        onChange={(e) => handleFileUpload(e.target.files[0], 'back')}
-                        className="hidden"
-                        id="back-upload"
-                      />
-                      <label
-                        htmlFor="back-upload"
-                        className="cursor-pointer bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm"
-                      >
-                        {uploadedFiles?.back?.name ? uploadedFiles?.back?.name : t('uploadImageOrPdfFile')}
-                      </label>
                     </div>
-                  </div>
                 </div>
+              )}
               </div>
 
             {/* Submit button - only show when files are uploaded */}
             {(uploadedFiles.front && uploadedFiles.back && showUploadOptions) && (
               <div className="mt-8 text-center">
                 <button
-                  onClick={submitDocuments}
+                  onClick={submitValuation}
                   className="bg-gradient-to-r from-green-500 to-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:from-green-600 hover:to-blue-700 transition-all duration-200"
                 >
                   {t('submitDocuments')}
@@ -764,143 +1271,8 @@ export default function CarSubmission() {
     return null;
   };
 
-  const renderStep2 = () => {
-    const getStatusIcon = () => {
-      if (processingStatus === 'extraction_failed') {
-        return <Icon name="x" size={32} className="text-red-500" />;
-      } else if (processingStatus === 'extraction_completed') {
-        return <Icon name="check" size={32} className="text-green-500" />;
-      } else {
-        return <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>;
-      }
-    };
-
-    const getStatusColor = () => {
-      if (processingStatus === 'extraction_failed') {
-        return 'from-red-500 to-red-600';
-      } else if (processingStatus === 'extraction_completed') {
-        return 'from-green-500 to-green-600';
-      } else {
-        return 'from-blue-500 to-purple-600';
-      }
-    };
-
-    const getStatusTitle = () => {
-      if (processingStatus === 'extraction_failed') {
-        return t('extractionFailed');
-      } else if (processingStatus === 'extraction_completed') {
-        return t('extractionCompleted');
-      } else {
-        return t('aiProcessingDocuments');
-      }
-    };
-
-    const getStatusMessage = () => {
-      if (processingMessage) {
-        return processingMessage;
-      } else if (processingStatus === 'extraction_failed') {
-        return t('extractionFailedDesc');
-      } else if (processingStatus === 'extraction_completed') {
-        return t('extractionCompletedDesc');
-      } else {
-        return t('aiProcessingDesc');
-      }
-    };
-
-    return (
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
-          <div className="text-center mb-8">
-            <div className={`w-16 h-16 bg-gradient-to-br ${getStatusColor()} rounded-full flex items-center justify-center mx-auto mb-4`}>
-              {getStatusIcon()}
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-              {getStatusTitle()}
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400">
-              {getStatusMessage()}
-            </p>
-          </div>
-
-          {/* Show error if extraction failed */}
-          {processingStatus === 'extraction_failed' && extractionError && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
-              <div className="flex items-start">
-                <Icon name="alert-circle" size={20} className="text-red-500 mt-0.5 mr-3 flex-shrink-0" />
-                <div>
-                  <h3 className="text-red-800 dark:text-red-200 font-medium mb-1">
-                    {t('extractionError')}
-                  </h3>
-                  <p className="text-red-700 dark:text-red-300 text-sm">
-                    {extractionError}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Processing steps */}
-          {processingStatus !== 'extraction_failed' && (
-            <div className="space-y-4">
-              <div className={`flex items-center gap-3 ${processingStatus === 'processing' ? 'opacity-100' : 'opacity-50'}`}>
-                <div className={`w-2 h-2 rounded-full ${processingStatus === 'processing' ? 'bg-blue-500 animate-pulse' : 'bg-gray-400'}`}></div>
-                <span className="text-gray-700 dark:text-gray-300">{t('analyzingDocumentImages')}</span>
-              </div>
-              <div className={`flex items-center gap-3 ${processingStatus === 'processing' ? 'opacity-100' : 'opacity-50'}`}>
-                <div className={`w-2 h-2 rounded-full ${processingStatus === 'processing' ? 'bg-blue-500 animate-pulse' : 'bg-gray-400'}`}></div>
-                <span className="text-gray-700 dark:text-gray-300">{t('extractingVehicleData')}</span>
-              </div>
-              <div className={`flex items-center gap-3 ${processingStatus === 'extraction_completed' ? 'opacity-100' : 'opacity-50'}`}>
-                <div className={`w-2 h-2 rounded-full ${processingStatus === 'extraction_completed' ? 'bg-green-500' : 'bg-gray-400'}`}></div>
-                <span className="text-gray-700 dark:text-gray-300">{t('validatingInformation')}</span>
-              </div>
-            </div>
-          )}
-
-          {/* Action buttons */}
-          {processingStatus === 'extraction_failed' && (
-            <div className="mt-8 flex gap-4">
-              <button
-                onClick={() => {
-                  setCurrentStep(1);
-                  resetSubmission();
-                }}
-                className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 px-4 rounded-lg transition-colors"
-              >
-                {t('tryAgain')}
-              </button>
-              <button
-                onClick={() => setCurrentStep(1)}
-                className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded-lg transition-colors"
-              >
-                {t('uploadNewDocuments')}
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
 
   const renderStep3 = () => {
-    // Auto-populate form with extracted data when available
-    useEffect(() => {
-      if (extractedData && Object.keys(extractedData).length > 0) {
-        setFormData(prev => ({
-          ...prev,
-          vin: extractedData.vin || prev.vin,
-          manufacturing_year: extractedData.manufacturing_year || prev.manufacturing_year,
-          specs: extractedData.specs || prev.specs,
-          vehicle_category: extractedData.vehicle_category || prev.vehicle_category,
-          owner_name: extractedData.owner_name || prev.owner_name,
-          transmission: extractedData.transmission || prev.transmission,
-          trim_id: extractedData.trim_id || prev.trim_id,
-          make: extractedData.make || prev.make,
-          model: extractedData.model || prev.model,
-          trim: extractedData.trim || prev.trim
-        }));
-      }
-    }, [extractedData]);
 
     return (
       <div className="max-w-4xl mx-auto">
@@ -1025,8 +1397,8 @@ export default function CarSubmission() {
               }`}
             >
               <option value="">{t('selectTrim')}</option>
-              {availableTrims.map((trim) => (
-                <option key={trim.trim_id} value={trim.trim}>
+              {availableTrims.map((trim, index) => (
+                <option key={`${trim.trim_id}-${index}`} value={trim.trim}>
                   {trim.trim}
                 </option>
               ))}
@@ -1112,8 +1484,8 @@ export default function CarSubmission() {
             >
               <option value="">{t('selectTransmission')}</option>
               {transmissionOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
+                <option key={option.key} value={option.value}>
+                  {option.key}
                 </option>
               ))}
             </select>
@@ -1132,8 +1504,8 @@ export default function CarSubmission() {
             >
               <option value="">{t('selectCategory')}</option>
               {vehicleCategories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
+                <option key={category.key} value={category.value}>
+                  {category.key}
                 </option>
               ))}
             </select>
@@ -1157,6 +1529,137 @@ export default function CarSubmission() {
         </div>
       </div>
     </div>
+    );
+  };
+
+  const renderStep3_5 = () => {
+    const [mileage, setMileage] = useState('');
+    const [warranty, setWarranty] = useState('');
+
+    const handleSubmit = () => {
+      if (!mileage) {
+        toast.error('Current mileage is required');
+        return;
+      }
+
+      const mileageNum = parseInt(mileage);
+      if (isNaN(mileageNum) || mileageNum < 0) {
+        toast.error('Please enter a valid mileage');
+        return;
+      }
+
+      handleSimplifiedDataConfirm(mileageNum, warranty);
+    };
+
+    return (
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+          <div className="text-center mb-8">
+            <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Icon name="check" size={40} className="text-white" />
+            </div>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              {t('vehicleFound') || 'Vehicle Found in Database'}
+            </h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
+              {t('vehicleFoundDesc') || 'This vehicle has been verified before. We only need the current mileage and warranty status.'}
+            </p>
+          </div>
+
+          {/* Show existing car data */}
+          {carRecord && (
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 mb-8">
+              <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-4">
+                {t('vehicleDetails') || 'Vehicle Details (Verified)'}
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-blue-600 dark:text-blue-400 font-medium">VIN:</span>
+                  <span className="ml-2 font-mono">{carRecord.vin || 'N/A'}</span>
+                </div>
+                <div>
+                  <span className="text-blue-600 dark:text-blue-400 font-medium">Year:</span>
+                  <span className="ml-2">{carRecord.manufacturing_year || 'N/A'}</span>
+                </div>
+                <div>
+                  <span className="text-blue-600 dark:text-blue-400 font-medium">Make:</span>
+                  <span className="ml-2">{carRecord.make || 'N/A'}</span>
+                </div>
+                <div>
+                  <span className="text-blue-600 dark:text-blue-400 font-medium">Model:</span>
+                  <span className="ml-2">{carRecord.model || 'N/A'}</span>
+                </div>
+                <div className="md:col-span-2">
+                  <span className="text-blue-600 dark:text-blue-400 font-medium">Trim:</span>
+                  <span className="ml-2">{carRecord.trim || 'N/A'}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {t('currentMileage') || 'Current Mileage (KM)'} *
+              </label>
+              <input
+                type="number"
+                value={mileage}
+                onChange={(e) => setMileage(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                placeholder="e.g., 45000"
+                required
+                min="0"
+              />
+              {carRecord?.current_mileage && (
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  Previous: {carRecord.current_mileage.toLocaleString()} KM
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {t('warrantyStatus') || 'Warranty Status'}
+              </label>
+              <select
+                value={warranty}
+                onChange={(e) => setWarranty(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              >
+                <option value="">Select warranty status...</option>
+                <option value="[725] Yes">Yes - Under Warranty</option>
+                <option value="[726, 727] No">No - No Warranty</option>
+              </select>
+              {carRecord?.warranty && (
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  Previous: {carRecord.warranty}
+                </p>
+              )}
+            </div>
+
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+              <div className="flex items-start">
+                <Icon name="info" size={20} className="text-yellow-600 dark:text-yellow-400 mt-0.5 mr-3 flex-shrink-0" />
+                <div>
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                    <strong>Note:</strong> All other vehicle details are already verified. 
+                    You only need to provide the latest mileage and warranty status.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={!mileage || setIsLoading}
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {setIsLoading ? 'Confirming...' : (t('confirmContinue') || 'Confirm & Continue')}
+            </button>
+          </form>
+        </div>
+      </div>
     );
   };
 
@@ -1224,11 +1727,91 @@ export default function CarSubmission() {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {currentStep === 1 && renderStep1()}
+        {currentStep === 1 && !isLoggdedIn && renderStep1()}
+        {currentStep === 1.5 && renderStep1_5()}
         {currentStep === 2 && renderStep2()}
         {currentStep === 3 && renderStep3()}
+        {currentStep === 3.5 && renderStep3_5()}
         {currentStep === 4 && renderStep4()}
       </div>
+
+      {/* Pending Valuation Modal */}
+      {showPendingModal && pendingValuation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full">
+            <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-t-lg">
+              <h3 className="text-xl font-bold">{t('resumeValuation') || 'Resume Valuation?'}</h3>
+              <p className="text-blue-100 text-sm mt-1">{t('pendingValuationRequest') || 'You have a pending valuation request'}</p>
+            </div>
+
+            <div className="p-6">
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
+                <div className="flex items-start">
+                  <Icon name="alert" size={20} className="text-yellow-600 dark:text-yellow-400 mt-0.5 mr-3 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                      <strong>{t('incompleteSubmissionFound') || 'Incomplete Submission Found'} </strong><br />
+                      {t('incompleteSubmissionDesc') || 'Your previous valuation request wasn\'t completed. Would you like to continue or start fresh?'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{t('pendingValuationDetails') || 'Pending Valuation Details:'}</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">{t('valuationId') || 'Valuation ID:'}</span>
+                    <span className="font-mono font-medium">{pendingValuation.valuation_id}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">{t('status') || 'Status:'}</span>
+                    <span className="bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded text-xs font-medium">
+                      {pendingValuation.status}
+                    </span>
+                  </div>
+                  {pendingValuation.car_data?.vin && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 dark:text-gray-400">{t('vin') || 'VIN:'}</span>
+                      <span className="font-mono font-medium">{pendingValuation.car_data.vin}</span>
+                    </div>
+                  )}
+                  {pendingValuation.car_data?.make && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 dark:text-gray-400">{t('vehicle') || 'Vehicle:'}</span>
+                      <span className="font-medium">{pendingValuation.car_data.make} {pendingValuation.car_data.model || ''}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={handleDiscardPending}
+                  className="flex-1 bg-red-500 hover:bg-red-600 text-white py-3 px-4 rounded-lg font-medium transition-colors"
+                >
+                  {t('discardAndStartFresh') || 'Discard & Start Fresh'}
+                </button>
+                <button
+                  onClick={handleResumePending}
+                  className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded-lg font-medium transition-colors"
+                >
+                  {t('resumeValuation') || 'Resume Valuation'}
+                </button>
+              </div>
+
+              <div className="text-center mt-4">
+                <button
+                  onClick={() => setShowPendingModal(false)}
+                  className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 text-sm underline"
+                >
+                  {t('cancel') || 'Cancel'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

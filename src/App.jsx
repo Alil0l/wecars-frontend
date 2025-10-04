@@ -19,18 +19,7 @@ import NotFound from './views/NotFound'
 import Layout from './components/Layout'
 
 export default function App() {
-	// const getUserToken = async () => {
-	// 	const response = await fetch('/api/method/wecars.auth.send_auth_link', {
-	// 		method: 'POST',
-	// 		body: JSON.stringify({
-	// 			email: 'Administrator',
-	// 			user_data: {}
-	// 		})
-	// 	})
-	// 	const data = await response.json()
-	// 	console.log(data)
-	// 	return data.message.api_key
-	// }
+
 	const getUserToken = () => {
 		const apiKey = localStorage.getItem('wecars_api_key');
 		const apiSecret = localStorage.getItem('wecars_api_secret');
@@ -85,11 +74,11 @@ const routes = [
 		element: <Landing />
 	},
 	{
-		path: "login",
+		path: "/login",
 		element: <Auth />
 	},
 	{
-		path: "signup",
+		path: "/signup",
 		element: <Auth />
 	},	
 	{

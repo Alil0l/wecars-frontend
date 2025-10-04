@@ -13,7 +13,7 @@ export default function FinalOfferCard({ submission, onUpdate }) {
     try {
       setLoading(true);
       // const result = await callFrappeMethod('wecars.submission.accept_final_offer', {
-      //   submission_id: submission.submission_id,
+      //   submission_id: submission.valuation_id,
       //   customer_decision: 'Accepted',
       //   customer_decision_notes: 'Customer accepted the offer via frontend'
       // });
@@ -41,7 +41,7 @@ export default function FinalOfferCard({ submission, onUpdate }) {
     try {
       setLoading(true);
       // const result = await callFrappeMethod('wecars.submission.decline_final_offer', {
-      //   submission_id: submission.submission_id,
+      //   submission_id: submission.valuation_id,
       //   customer_decision: 'Declined',
       //   customer_decision_notes: rejectionReason
       // });
@@ -86,20 +86,20 @@ export default function FinalOfferCard({ submission, onUpdate }) {
           <h4 className="font-medium mb-2">{t('offerDetails') || 'Offer Details'}</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="text-purple-100">{t('vehicle') || 'Vehicle'}:</p>
-              <p className="font-medium">{submission.make} {submission.model} {submission.trim}</p>
+              <p className="text-purple-100">{t('carRecord') || 'Car Record'}:</p>
+              <p className="font-medium">{submission.car_record || 'N/A'}</p>
             </div>
             <div>
-              <p className="text-purple-100">{t('year') || 'Year'}:</p>
-              <p className="font-medium">{submission.manufacturing_year}</p>
+              <p className="text-purple-100">{t('currentMileage') || 'Current Mileage'}:</p>
+              <p className="font-medium">{submission.current_mileage?.toLocaleString()} km</p>
             </div>
             <div>
-              <p className="text-purple-100">{t('mileage') || 'Mileage'}:</p>
-              <p className="font-medium">{submission.mileage?.toLocaleString()} km</p>
+              <p className="text-purple-100">{t('submissionType') || 'Submission Type'}:</p>
+              <p className="font-medium">{submission.submission_type || 'N/A'}</p>
             </div>
             <div>
               <p className="text-purple-100">{t('offeredBy') || 'Offered By'}:</p>
-              <p className="font-medium">{submission.final_offer_by_representative || 'WeCars Team'}</p>
+              <p className="font-medium">{submission.final_offer_by || 'WeCars Team'}</p>
             </div>
           </div>
         </div>

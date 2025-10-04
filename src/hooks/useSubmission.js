@@ -13,19 +13,34 @@ export const useSubmission = () => {
   // File upload hook
   const { upload: uploadFile, loading: fileUploadLoading, progress, error: fileUploadError, isCompleted: fileUploadCompleted, reset: resetFileUpload } = useFrappeFileUpload();
   
-  // Create submission with documents
-  const { call: createSubmission, loading: createLoading, error: createError, result: createResult, reset: resetCreate } = useFrappePostCall('wecars.submission.create_submission_with_documents');
-  
   // Confirm vehicle data
-  const { call: confirmVehicleData, loading: confirmLoading, error: confirmError, result: confirmResult, reset: resetConfirm } = useFrappePostCall('wecars.submission.confirm_and_update_vehicle_data');
+  const { call: confirmVehicleData, loading: confirmLoading, error: confirmError, result: confirmResult, reset: resetConfirm } = useFrappePostCall('wecars.api.confirm_customer_data');
 
+  // Authentication API calls
+  const { call: sendAuthLink, loading: sendAuthLinkLoading } = useFrappePostCall('wecars.auth.send_auth_link');
+  const { call: verifyToken, loading: verifyTokenLoading } = useFrappePostCall('wecars.auth.verify_token');
+  
+  // Customer API calls
+  const { call: checkCustomer } = useFrappePostCall('wecars.api.check_customer');
+  const { call: checkPendingValuation } = useFrappePostCall('wecars.api.check_pending_valuation');
+  const { call: resumePendingValuation } = useFrappePostCall('wecars.api.resume_pending_valuation');
+  const { call: discardPendingValuation } = useFrappePostCall('wecars.api.discard_pending_valuation');
+  const { call: confirmCustomerData } = useFrappePostCall('wecars.api.confirm_customer_data');
+  
+  // Vehicle API calls
+  const { call: createValuation, loading: createValuationLoading, error: createValuationError, result: createValuationResult, reset: resetCreateValuation } = useFrappePostCall('wecars.api.create_valuation');
+  const { call: getTrimsForMake } = useFrappePostCall('wecars.api.get_trims_for_make');
+  
   // Get submission status
   const { data: submissionStatus, error: statusError, mutate: refreshStatus } = useFrappeGetCall(
     'wecars.submission.get_submission_status',
     { submission_id: submissionId },
     submissionId ? `submission-status-${submissionId}` : null
   );
-
+  // List
+  const { call: getList, loading: getListLoading, error: getListError, result: getListResult, reset: resetGetList }
+   = useFrappePostCall('wecars.api.get_trims_for_make');
+  
   // Initialize socket connection
   useEffect(() => {
     initializeSocket();
@@ -33,6 +48,18 @@ export const useSubmission = () => {
       disconnectSocket();
     };
   }, []);
+  
+  const getListHook = async (make) => {
+    try {
+      const result = await getList(make);
+      console.log('List:', result);
+      return result;
+    }
+    catch (error) {
+      console.error('Error getting list:', error);
+      throw error;
+    }
+  };
 
   // Realtime event handlers
   const handleProcessingStarted = useCallback((data) => {
@@ -66,6 +93,27 @@ export const useSubmission = () => {
     toast.error(data.message || 'Failed to extract vehicle data');
   }, []);
 
+  // NEW: Additional realtime event handlers
+  const handleAutoValuationCompleted = useCallback((data) => {
+    console.log('Auto valuation completed:', data);
+    toast.success(`Auto valuation completed: AED ${data.amount?.toLocaleString()}`);
+  }, []);
+
+  const handleAutoValuationFailed = useCallback((data) => {
+    console.log('Auto valuation failed:', data);
+    toast.warning('Auto valuation failed. Manual valuation required.');
+  }, []);
+
+  const handleFinalOfferPresented = useCallback((data) => {
+    console.log('Final offer presented:', data);
+    toast.info(`Final offer: AED ${data.offer_amount?.toLocaleString()}`);
+  }, []);
+
+  const handleValuationStatusUpdated = useCallback((data) => {
+    console.log('Valuation status updated:', data);
+    // Handle status updates as needed
+  }, []);
+
   // Set up socket event listeners
   useEffect(() => {
     if (socket) {
@@ -73,15 +121,33 @@ export const useSubmission = () => {
       socket.on('submission_processing_started', handleProcessingStarted);
       socket.on('submission_extraction_completed', handleExtractionCompleted);
       socket.on('submission_extraction_failed', handleExtractionFailed);
+      
+      // NEW: Listen for additional valuation events
+      socket.on('auto_valuation_completed', handleAutoValuationCompleted);
+      socket.on('auto_valuation_failed', handleAutoValuationFailed);
+      socket.on('final_offer_presented', handleFinalOfferPresented);
+      socket.on('valuation_status_updated', handleValuationStatusUpdated);
 
       // Cleanup listeners on unmount
       return () => {
         socket.off('submission_processing_started', handleProcessingStarted);
         socket.off('submission_extraction_completed', handleExtractionCompleted);
         socket.off('submission_extraction_failed', handleExtractionFailed);
+        socket.off('auto_valuation_completed', handleAutoValuationCompleted);
+        socket.off('auto_valuation_failed', handleAutoValuationFailed);
+        socket.off('final_offer_presented', handleFinalOfferPresented);
+        socket.off('valuation_status_updated', handleValuationStatusUpdated);
       };
     }
-  }, [handleProcessingStarted, handleExtractionCompleted, handleExtractionFailed]);
+  }, [
+    handleProcessingStarted, 
+    handleExtractionCompleted, 
+    handleExtractionFailed,
+    handleAutoValuationCompleted,
+    handleAutoValuationFailed,
+    handleFinalOfferPresented,
+    handleValuationStatusUpdated
+  ]);
 
   // Subscribe to submission document when submissionId changes
   useEffect(() => {
@@ -95,7 +161,7 @@ export const useSubmission = () => {
     }
   }, [submissionId]);
 
-  const createSubmissionWithDocuments = async (customerEmail, files) => {
+  const createValuationWithDocuments = async (customerProfile, files) => {
     try {
       // First upload all files
       const uploadedFiles = {};
@@ -141,22 +207,24 @@ export const useSubmission = () => {
       
       // Now create submission with uploaded file URLs
       const submissionData = {
-        customer_email: customerEmail,
+        vin: 'temp',
+        customer_profile: customerProfile,
         ...uploadedFiles
       };
       
-      await createSubmission(submissionData);
-      
-      if (createResult?.message?.success) {
-        setSubmissionId(createResult.message.submission_id);
-        toast.success('Documents uploaded successfully! Processing started...');
+      // await createSubmission(submissionData);
+      const response = await createValuation(submissionData);
+
+      if (response?.message?.success) {
+        setSubmissionId(response.message.valuation_id);
+        console.log('response', response.message.valuation_id);
         return {
           success: true,
-          submission_id: createResult.message.submission_id,
-          message: createResult.message.message
+          valuation_id: response.message.valuation_id,
+          message: response.message.message
         };
       } else {
-        throw new Error(createResult?.message?.error || 'Failed to create submission');
+        throw new Error(response?.message?.error || 'Failed to create submission');
       }
     } catch (error) {
       console.error('Error creating submission:', error);
@@ -164,22 +232,25 @@ export const useSubmission = () => {
     }
   };
 
-  const confirmAndUpdateVehicleData = async (submissionId, vehicleData, mileage) => {
+  const confirmAndUpdateVehicleData = async (updated_fields,current_mileage) => {
     try {
-      await confirmVehicleData({
-        submission_id: submissionId,
-        vehicle_data: vehicleData,
-        mileage: parseInt(mileage)
+      console.log('submissionId', submissionId);
+      console.log('updated_fields', updated_fields);
+      console.log('current_mileage', current_mileage);
+      const response = await confirmVehicleData({
+        valuation_id: submissionId,
+        updated_fields: updated_fields,
+        current_mileage: parseInt(current_mileage)
       });
       
-      if (confirmResult?.message?.success) {
+      if (response?.message?.success) {
         toast.success('Vehicle data confirmed successfully!');
         return {
           success: true,
-          message: confirmResult.message.message
+          message: response.message.message
         };
       } else {
-        throw new Error(confirmResult?.message?.error || 'Failed to confirm vehicle data');
+        throw new Error(response?.message?.error || 'Failed to confirm vehicle data');
       }
     } catch (error) {
       console.error('Error confirming vehicle data:', error);
@@ -194,6 +265,78 @@ export const useSubmission = () => {
     }
     return null;
   };
+
+  const confirmCustomerDataHook = async (data) => {
+    try {
+      const result = await confirmCustomerData(data); 
+      console.log('Customer data confirmed:', result);
+      return result;
+    } catch (error) {
+      console.error('Error confirming customer data:', error);
+      throw error;
+    }
+  };
+
+  const getTrimsForMakeHook = async (make) => {
+    try {
+      const result = await getTrimsForMake({
+        make: make
+      });
+      console.log('Trims for make:', result);
+      return result;
+    }
+    catch (error) {
+      console.error('Error getting trims for make:', error);
+      throw error;
+    }
+  };
+
+  const checkCustomerHook = async (email) => {
+    try {
+      const result = await checkCustomer(email);
+      return result;
+    }
+    catch (error) {
+      console.error('Error checking customer:', error);
+      throw error;
+    }
+  };
+  
+  const checkPendingValuationHook = async (customer_profile) => {
+    try {
+      const result = await checkPendingValuation(customer_profile);
+      console.log('Pending valuation checked:', result);
+      return result;
+    }
+    catch (error) {
+      console.error('Error checking pending valuation:', error);
+      throw error;
+    }
+  };
+
+  const resumePendingValuationHook = async (valuation_id) => {
+    try {
+      const result = await resumePendingValuation(valuation_id);
+      setSubmissionId(result.message.valuation_id);
+      return result;
+    }
+    catch (error) {
+      console.error('Error resuming pending valuation:', error);
+      throw error;
+    }
+  };
+
+  const discardPendingValuationHook = async (valuation_id) => {
+    try {
+      const result = await discardPendingValuation(valuation_id);
+      console.log('Pending valuation discarded:', result);
+      return result;
+    }
+    catch (error) {
+      console.error('Error discarding pending valuation:', error);
+      throw error;
+    }
+  };  
 
   const resetSubmission = () => {
     setSubmissionId(null);
@@ -210,6 +353,7 @@ export const useSubmission = () => {
   return {
     // State
     submissionId,
+    setSubmissionId,
     extractedData,
     setExtractedData,
     submissionStatus,
@@ -228,13 +372,30 @@ export const useSubmission = () => {
     resetFileUpload,
     
     // Submission operations
-    createSubmissionWithDocuments,
+    createValuationWithDocuments,
     confirmAndUpdateVehicleData,
     checkSubmissionStatus,
-    createLoading,
-    createError,
+    createValuationLoading,
+    createValuationError,
     confirmLoading,
     confirmError,
+    
+    // Authentication API calls
+    sendAuthLink,
+    sendAuthLinkLoading,
+    verifyToken,
+    verifyTokenLoading,
+    
+    // Customer API calls
+    checkCustomerHook,
+    checkPendingValuationHook,
+    resumePendingValuationHook,
+    discardPendingValuationHook,
+    confirmCustomerDataHook ,
+    
+    // Vehicle API calls
+    getTrimsForMakeHook,
+    getListHook,
     
     // Reset
     resetSubmission

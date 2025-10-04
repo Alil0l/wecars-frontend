@@ -24,8 +24,7 @@ export default function Dashboard() {
     // refreshSubmissions,
     // statusCounts 
   } = useDashboard();
-
-
+  
   const getStatusColor = (status) => {
     const statusColors = {
       'Draft': 'bg-gray-100 text-gray-800',
@@ -40,7 +39,15 @@ export default function Dashboard() {
       'Finalizing': 'bg-indigo-100 text-indigo-800',
       'Purchased (Inventory)': 'bg-green-100 text-green-800',
       'Sold': 'bg-green-100 text-green-800',
-      'Offer Declined': 'bg-red-100 text-red-800'
+      // New status values from the API
+      'Valuation In Progress': 'bg-yellow-100 text-yellow-800',
+      'Pending Manual Valuation': 'bg-orange-100 text-orange-800',
+      'Auto Valuation Completed': 'bg-green-100 text-green-800',
+      'Manual Valuation Completed': 'bg-green-100 text-green-800',
+      'Final Offer Presented': 'bg-purple-100 text-purple-800',
+      'Offer Accepted': 'bg-green-100 text-green-800',
+      'Offer Declined': 'bg-red-100 text-red-800',
+      'Valuation Rejected': 'bg-red-100 text-red-800'
     };
     return statusColors[status] || 'bg-gray-100 text-gray-800';
   };
@@ -59,7 +66,15 @@ export default function Dashboard() {
       'Finalizing': <Icon name="zap" size={16} className="text-indigo-600" />,
       'Purchased (Inventory)': <Icon name="shield" size={16} className="text-green-600" />,
       'Sold': <Icon name="trending" size={16} className="text-green-600" />,
-      'Offer Declined': <Icon name="error" size={16} className="text-red-600" />
+      // New status values from the API
+      'Valuation In Progress': <Icon name="clock" size={16} className="text-yellow-600" />,
+      'Pending Manual Valuation': <Icon name="user" size={16} className="text-orange-600" />,
+      'Auto Valuation Completed': <Icon name="zap" size={16} className="text-green-600" />,
+      'Manual Valuation Completed': <Icon name="user" size={16} className="text-green-600" />,
+      'Final Offer Presented': <Icon name="dollar" size={16} className="text-purple-600" />,
+      'Offer Accepted': <Icon name="check" size={16} className="text-green-600" />,
+      'Offer Declined': <Icon name="error" size={16} className="text-red-600" />,
+      'Valuation Rejected': <Icon name="error" size={16} className="text-red-600" />
     };
     return statusIcons[status] || <Icon name="file" size={16} className="text-gray-600" />;
   };
@@ -77,22 +92,29 @@ export default function Dashboard() {
 
   const getStatusInfo = (submission) => {
     const status = submission.status;
+    const workflowStatus = submission.workflow_status;
     
-    if (status === 'Pending Review' || status === 'Customer Reviewed') {
+    // Get car information - it might be in car_record or directly in submission
+    const carInfo = submission.car_record || submission;
+    const carDescription = carInfo.make && carInfo.model ? 
+      `${carInfo.make} ${carInfo.model} ${carInfo.trim || ''}`.trim() : 
+      'Vehicle Details';
+    
+    if (status === 'Valuation In Progress' || workflowStatus === 'Pending Manual Valuation') {
       return {
         type: 'pending',
         title: t('pendingManualValuation') || 'Pending Manual Valuation',
-        description: `${submission.make} ${submission.model} ${submission.trim}`,
+        description: carDescription,
         value: submission.auto_valuation ? `Auto Valuation: ${submission.auto_valuation.toLocaleString()} AED` : t('pendingValuation') || 'Pending Valuation',
         showView: true
       };
     }
     
-    if (status === 'Pending Inspection') {
+    if (status === 'Pending Inspection' || workflowStatus === 'Pending Inspection') {
       return {
         type: 'inspection',
         title: t('pendingInspection') || 'Pending Inspection',
-        description: `${submission.make} ${submission.model} ${submission.trim}`,
+        description: carDescription,
         value: submission.auto_valuation ? `Your car could be worth ${submission.auto_valuation.toLocaleString()} AED` : t('estimatedValue') || 'Estimated Value',
         inspectionText: t('eligibleForFreeInspection') || 'You are eligible for a free car inspection',
         showView: true,
@@ -100,11 +122,11 @@ export default function Dashboard() {
       };
     }
     
-    if (status === 'Final Offer Made') {
+    if (status === 'Final Offer Presented' || workflowStatus === 'Final Offer Presented') {
       return {
         type: 'offer',
         title: t('manualValuationOffer') || 'Manual Valuation Offer',
-        description: `${submission.make} ${submission.model} ${submission.trim}`,
+        description: carDescription,
         value: submission.final_offer ? `We will buy your car at ${submission.final_offer.toLocaleString()} AED` : t('finalOffer') || 'Final Offer',
         showAccept: true,
         showReject: true,
@@ -112,11 +134,42 @@ export default function Dashboard() {
       };
     }
     
+    // Handle other new status values
+    if (status === 'Auto Valuation Completed' || status === 'Manual Valuation Completed') {
+      return {
+        type: 'completed',
+        title: t('valuationCompleted') || 'Valuation Completed',
+        description: carDescription,
+        value: getDisplayValue(submission),
+        showView: true
+      };
+    }
+    
+    if (status === 'Offer Accepted') {
+      return {
+        type: 'accepted',
+        title: t('offerAccepted') || 'Offer Accepted',
+        description: carDescription,
+        value: submission.final_offer ? `Final Offer: ${submission.final_offer.toLocaleString()} AED` : t('offerAccepted') || 'Offer Accepted',
+        showView: true
+      };
+    }
+    
+    if (status === 'Offer Declined' || status === 'Valuation Rejected') {
+      return {
+        type: 'declined',
+        title: t('offerDeclined') || 'Offer Declined',
+        description: carDescription,
+        value: t('offerDeclined') || 'Offer Declined',
+        showView: true
+      };
+    }
+    
     // Default card for other statuses
     return {
       type: 'default',
       title: status,
-      description: `${submission.make} ${submission.model} ${submission.trim}`,
+      description: carDescription,
       value: getDisplayValue(submission),
       showView: true
     };
@@ -152,11 +205,15 @@ export default function Dashboard() {
     return documents;
   };
 
-  const filteredSubmissions = submissions.filter(submission => 
-    submission.make?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    submission.model?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    submission.submission_id?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredSubmissions = submissions.filter(submission => {
+    const carInfo = submission.car_record || submission;
+    return (
+      carInfo.make?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      carInfo.model?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      submission.valuation_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      submission.name?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16">
@@ -242,14 +299,14 @@ export default function Dashboard() {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              setShowMenu(showMenu === submission.submission_id ? null : submission.submission_id);
+                              setShowMenu(showMenu === submission.valuation_id ? null : submission.valuation_id);
                             }}
                             className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
                           >
                             <Icon name="more-vertical" size={16} className="text-gray-600 dark:text-gray-400" />
                           </button>
                           
-                          {showMenu === submission.submission_id && (
+                          {showMenu === submission.valuation_id && (
                             <div className="absolute right-0 top-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10 min-w-48">
                               {documents.map((doc, docIndex) => (
                                 <button
@@ -274,7 +331,7 @@ export default function Dashboard() {
                     <div className="mb-4">
                       <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
                         <span className="text-blue-600 dark:text-blue-400 font-bold text-lg">
-                          {submission.make?.charAt(0) || 'C'}
+                          {(submission.car_record?.make || submission.make)?.charAt(0) || 'C'}
                         </span>
                       </div>
                     </div>
@@ -304,7 +361,7 @@ export default function Dashboard() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            navigate(`/submission/${submission.submission_id}`);
+                            navigate(`/submission/${submission.valuation_id}`);
                           }}
                           className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
                         >

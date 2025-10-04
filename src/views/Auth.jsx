@@ -6,6 +6,7 @@ import { useAppContext } from '../contexts/AppContext';
 import { useFrappePostCall } from 'frappe-react-sdk';
 import Icon from '../components/Icons';
 import Logo from '../assets/w.svg';
+import { isValidEmail, isValidUAEMobile, formatUAEMobile } from '../utils/validation';
 export default function Auth() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -32,15 +33,15 @@ export default function Auth() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Check for magic link token on component mount
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const magicToken = urlParams.get('token');
+  // // Check for magic link token on component mount
+  // useEffect(() => {
+  //   const urlParams = new URLSearchParams(window.location.search);
+  //   const magicToken = urlParams.get('token');
     
-    if (magicToken) {
-      verifyTokenCall(magicToken);
-    }
-  }, []);
+  //   if (magicToken) {
+  //     verifyTokenCall(magicToken);
+  //   }
+  // }, []);
 
   // update this to be array of objects with the english as value and the arabic as label
   const emirates = [
@@ -95,8 +96,8 @@ export default function Auth() {
       setError('Please fill in all required fields');
       return;
     }
-    if(userData.mobile_number.length !== 10) {
-      setError('Please enter a valid mobile number');
+    if (!isValidUAEMobile(userData.mobile_number)) {
+      setError('Please enter a valid UAE mobile number');
       return;
     }
     if(userData.emirate === '') {
@@ -188,10 +189,6 @@ export default function Auth() {
     navigate('/dashboard');
   };
 
-  const isValidEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
 
   const renderStep1 = () => (
     <div className="max-w-md mx-auto">
@@ -328,7 +325,12 @@ export default function Auth() {
             <input
               type="tel"
               value={userData.mobile_number}
-              onChange={(e) => setUserData(prev => ({ ...prev, mobile_number: e.target.value }))}
+              onChange={(e) => setUserData(prev => ({ ...prev, mobile_number: formatUAEMobile(e.target.value) }))}
+              onBlur={() => {
+                if (userData.mobile_number && !isValidUAEMobile(userData.mobile_number)) {
+                  setError('Please enter a valid UAE mobile number');
+                }
+              }}
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
               placeholder="+971 50 123 4567"
               required

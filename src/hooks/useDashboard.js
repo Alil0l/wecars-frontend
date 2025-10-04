@@ -1,42 +1,39 @@
-import { useFrappeGetDocList } from 'frappe-react-sdk';
+// import { useFrappeGetDocList } from 'frappe-react-sdk';
 import { useUserContext } from '../contexts/UserContext';
+import {useEffect, useState} from 'react';
 
 export const useDashboard = () => {
-  const { currUser } = useUserContext();
-  // Get user's submissions
-  const { 
-    data: submissions, 
-    error: submissionsError, 
-    isValidating: submissionsLoading, 
-    // mutate: refreshSubmissions 
-  } = useFrappeGetDocList(
-    'WC Car Submission',
-    {
-      filters: [['customer_email', '=', currUser?.email || '']],
-      fields: [
-        'name', 'submission_id', 'status', 'make', 'model', 'trim', 
-        'manufacturing_year', 'mileage', 'auto_valuation', 'manual_valuation', 
-        'final_offer', 'creation', 'modified'
-      ],
-      orderBy: {
-        field: 'creation',
-        order: 'desc'
+  const { currUser, userCustomerProfile } = useUserContext();
+  const [submissions, setSubmissions] = useState([]);
+  const [submissionsLoading, setSubmissionsLoading] = useState(false);
+  const [submissionsError, setSubmissionsError] = useState(null);
+
+  useEffect(() => {
+    async function getSubmissions() {
+      if(!userCustomerProfile || submissionsLoading) return;
+      try {
+        setSubmissionsLoading(true);
+        setSubmissionsError(null);
+      const response = await fetch('/api/resource/WC Car Valuation?fields="*"&filters=[["customer_profile", "=", "' + userCustomerProfile?.name + '"]]', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `token ${localStorage.getItem('wecars_api_key')}:${localStorage.getItem('wecars_api_secret')}`
+        }
+      });
+      const data = await response.json();
+      if(submissions.length !== data.data.length) {
+        setSubmissions(data.data || []);
       }
-    },
-    "submissions",
-    {
-      // SWR Configuration Options
-      revalidateOnMount: false,
-      revalidateIfStale: false,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      refreshWhenOffline : false, 
-      refreshWhenHidden : false,
-      shouldRetryOnError: false,
-      refreshInterval : 900000,
-      dedupingInterval: 900000
+      } catch (error) {
+        setSubmissionsError(error);
+      } finally {
+        setSubmissionsLoading(false);
+      }
     }
-  );
+    
+    getSubmissions();
+  }, [userCustomerProfile]);
 
   // Calculate status counts from the submissions data
   const statusCounts = {
@@ -56,3 +53,4 @@ export const useDashboard = () => {
     statusCounts
   };
 };
+

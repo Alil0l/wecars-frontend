@@ -99,7 +99,8 @@ export default function Navbar() {
     
     if (hasCars) {
       return {
-        text: t('myCars') || 'My Cars',
+        // add a heart icon instead of text
+        text: <Icon name="heart" size={16} className="text-gray-700 dark:text-gray-300" />,
         action: () => navigate('/dashboard'),
         className: 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 rounded-md text-sm font-medium transition-colors'
       };
@@ -119,7 +120,6 @@ export default function Navbar() {
   const menuItems = [
     { name: t('home'), to: '/' },
     ...(isLoggdedIn ? [
-      { name: t('dashboard'), to: '/dashboard' },
       { name: t('submission'), to: '/submission' },
       { name: t('valuation'), to: '/valuation' },
     ] : [])
@@ -139,7 +139,7 @@ export default function Navbar() {
         ${isNavbarVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}
         ${isRTL ? 'rtl' : 'ltr'}
       `}>
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className={`mx-auto px-4 sm:px-6 lg:px-8 ${menuItems.length > 1 ? 'max-w-7xl' : 'max-w-5xl'}`}>
         <div className="flex justify-between items-center h-16">
           {/* Brand */}
           <Link to="/" className="flex items-center gap-3">

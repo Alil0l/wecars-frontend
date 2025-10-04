@@ -1,7 +1,7 @@
 import { useState, createContext, useContext, useEffect } from 'react'
 import { useAppContext } from './AppContext'
 import { useFrappeAuth } from 'frappe-react-sdk';
-
+import { useSubmission } from '../hooks/useSubmission';
 const UserContext = createContext(null);
 
 export const UserProvider = ({ children }) => {
@@ -9,6 +9,8 @@ export const UserProvider = ({ children }) => {
   const [isLoggdedIn, setIsLoggdedIn] = useState(true);
   const [currUser, setCurrUser] = useState(null);
   const [newNotification, setNewNotification] = useState(false);
+  const { checkCustomerHook } = useSubmission();
+  const [userCustomerProfile, setUserCustomerProfile] = useState(null);
   
   const {
     currentUser: userEmail,
@@ -46,8 +48,16 @@ export const UserProvider = ({ children }) => {
       return;
     }
 
+
+    const checkUserCustomerProfile = async () => {
+      const customerResponse = await checkCustomerHook({ email: userEmail });
+      if (customerResponse.message.exists) {
+        setUserCustomerProfile(customerResponse.message.customer);
+      }
+    }
     // If we have a current user from Frappe auth
     if (userEmail) {
+      checkUserCustomerProfile();
       setCurrUser(JSON.parse(storedUser));
       setIsLoggdedIn(true);
     } else {
@@ -83,7 +93,9 @@ export const UserProvider = ({ children }) => {
       setNewNotification,
       logout: myLogout,
       login,
-      error
+      error,
+      userCustomerProfile,
+      setUserCustomerProfile
     }}>
       {children}
     </UserContext.Provider>
